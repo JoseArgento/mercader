@@ -97,7 +97,7 @@ def test_toc_is_for_forever_and_has_its_art():
     lines = toc_lines()
     assert "## Interface: 16001" in lines
     assert "## SavedVariables: MercaderDB" in lines
-    for name in ("icon", "pin", "pin_rumour"):
+    for name in ("icon", "pin", "pin_rumour", "glow"):
         assert (ADDON / "Media" / f"{name}.tga").exists()
     assert toc_files()[0] == "Libs/Pergamino/Pergamino.lua"
 
@@ -465,6 +465,109 @@ def test_the_map_is_hooked_later_when_the_game_makes_it_late():
     assert any(p["_shown"] for p in lua_list(game.ns.Map.pins))
 
 
+def test_open_map_points_at_the_vendor(game):
+    game.ns.UI.Open("Grazlix@1413")
+    game.run("ns.UI.ShowOnMap(ns.Vendors.Find('Grazlix@1413'))")
+    glow = game.ns.Map.glow
+    # the ring is on Ratchet's mark (the one that holds Grazlix), takes its scale and pulses
+    assert glow["_shown"] and glow.on.mark.x == 0.62 and glow.on.count["_text"] == "2"
+    assert game.run("local c = ns.Map.glow._calls for i = #c, 1, -1 do if c[i][1] == 'SetParent' then return c[i][2] == ns.Map.glow.on end end")
+    assert glow.art.texture.endswith("glow") and game.m.played == 1
+    # a few seconds later it goes away on its own
+    game.m.runTimers()
+    assert not glow["_shown"] and game.ns.Map.highlight is None
+    # a vendor without a position: the ring goes to the note at the corner
+    game.ns.UI.Open("Dark Iron Entrepreneur@1437")
+    game.run("ns.UI.ShowOnMap(ns.Vendors.Find('Dark Iron Entrepreneur@1437'))")
+    assert glow["_shown"] and game.run("return ns.Map.glow.on == ns.Map.note")
+    # pointing at another one moves it; the first one's timer does not take it away
+    game.run("ns.Map.Highlight('Brak Durnad@1437')")
+    assert glow["_shown"] and game.run("return ns.Map.glow.on ~= ns.Map.note") and glow.on.mark.x == 0.1
+
+
+# --- the minimap -----------------------------------------------------------------------------------------
+
+
+def test_minimap_maths(game):
+    off = game.ns.Mini.Offset
+    # a zone of 10000 x 6000 yards, a minimap that shows 200 yards to each side and is 70 px to the rim
+    x, y, dist = off(0.50, 0.50, 0.51, 0.50, 10000, 6000, 200, 70, None)
+    assert (x, y, dist) == pytest.approx((35, 0, 100))  # 100 yards east: half way to the right
+    x, y, dist = off(0.50, 0.50, 0.50, 0.49, 10000, 6000, 200, 70, None)
+    assert (x, y, dist) == pytest.approx((0, 21, 60))  # 60 yards north: up
+    x, y, dist = off(0.50, 0.50, 0.53, 0.50, 10000, 6000, 200, 70, None)
+    assert x is None and dist == pytest.approx(300)  # outside
+    x, y, dist = off(0.50, 0.50, 0.5185, 0.50, 10000, 6000, 200, 70, None)
+    assert x is None  # 185 yards: inside the square but on the rim of a round minimap
+    # the minimap turns with the player, who looks west: what is to the west is up
+    import math
+
+    x, y, dist = off(0.50, 0.50, 0.49, 0.50, 10000, 6000, 200, 70, math.pi / 2)
+    assert (x, y) == pytest.approx((0, 35), abs=1e-6)
+
+
+def test_minimap_sizes(game):
+    assert game.ns.Mini.Radius() == pytest.approx(233.333, abs=0.01)
+    game.m.zoom = 5
+    assert game.ns.Mini.Radius() == pytest.approx(66.667, abs=0.01)
+    game.m.indoors = True
+    assert game.ns.Mini.Radius() == 25
+    assert game.ns.Mini.ZoneSize(1413) == (10000, 6000)
+    assert game.ns.Mini.ZoneSize(1437) is None  # the game does not say: no marks there
+
+
+def mini(game):
+    out = []
+    for mark in lua_list(game.ns.Mini.Layout()):
+        out.append((round(mark.x, 1), round(mark.y, 1), sorted(e.key for e in lua_list(mark.entries)), mark.rumour))
+    return out
+
+
+def test_marks_on_the_minimap(game):
+    # the player stands 100 yards west and 60 north of Ratchet (0.62, 0.37): its two rumours share one mark
+    game.goto(1413, 0.61, 0.36)
+    assert mini(game) == [(30.0, -18.0, ["Grazlix@1413", "Vexspindle@1413"], True)]
+    assert game.ns.Mini.Update() == 1
+    pin = game.ns.Mini.pins[1]
+    anchor = pin["_points"][1]
+    assert pin["_shown"] and (anchor[1], anchor[3]) == ("CENTER", "CENTER")
+    assert (anchor[4], anchor[5]) == pytest.approx((30, -18)) and pin.art.texture.endswith("pin_rumour")
+    # a visit turns it into a vendor's mark, where the player stands
+    game.open("{ name = 'Grazlix', npc = 3482, items = { {4778, 1, 100} } }")
+    assert (0.0, 0.0, ["n3482"], False) in mini(game)
+    # far from everything, in a dungeon, or turned off: nothing
+    game.goto(1413, 0.20, 0.80)
+    assert mini(game) == [] and game.ns.Mini.Update() == 0 and not pin["_shown"]
+    game.goto(None)
+    assert mini(game) == []
+    game.goto(1413, 0.61, 0.36)
+    game.ns.db.settings.minimapPins = False
+    assert mini(game) == []
+
+
+def test_the_minimap_that_turns_with_the_player(game):
+    import math
+
+    game.goto(1413, 0.61, 0.37)  # Ratchet is 100 yards to the east
+    assert mini(game)[0][:2] == (30.0, 0.0)
+    game.m.cvars.rotateMinimap = "1"
+    game.m.facing = -math.pi / 2  # looking east: Ratchet is straight ahead, up
+    assert mini(game)[0][:2] == (0.0, 30.0)
+    game.m.facing = None  # the game does not say where the player looks: nothing is drawn
+    assert mini(game) == []
+
+
+def test_minimap_mark_tooltip_and_click(game):
+    game.goto(1413, 0.61, 0.36)
+    game.ns.Mini.Update()
+    pin = game.ns.Mini.pins[1]
+    assert round(pin.mark.dist) == 117
+    pin["_scripts"].OnClick(pin, "LeftButton")
+    assert game.ns.UI.frame["_shown"] and game.ns.UI.selected == "Grazlix@1413"
+    pin["_scripts"].OnClick(pin, "RightButton")
+    assert game.m.waypoints[1].map == 1413
+
+
 def test_tooltip_lines(game):
     game.open(LIZZARIK)
     lines = [ln[1] for ln in lua_list(game.run("return ns.Map.TipLines({ ns.Vendors.Find('n3658'), ns.Vendors.Find('Grazlix@1413') })"))]
@@ -662,6 +765,7 @@ def test_saved_variables_are_made_and_mended():
     s = game.ns.db.settings
     assert s.lang == "auto" and s.pins is True and s.rumours is True and s.announce is True and s.otherSide is False
     assert s.cats.gear is False and s.cats.potion is True and s.cats.other is True
+    assert s.minimapPins is True
     assert game.run("return type(ns.db.vendors)") == "table"
     assert "MercaderDB" in game.m.savedVariables("MercaderDB")
 

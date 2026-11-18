@@ -102,7 +102,7 @@ function Map.TipLines(entries)
 	return lines
 end
 
-local function showTip(owner, heading, entries, foot)
+function Map.ShowTip(owner, heading, entries, foot)
 	GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
 	local first = true
 	local function add(text, r, g, b)
@@ -145,7 +145,7 @@ local function makePin(canvas)
 	pin:SetScript(
 		"OnEnter",
 		guarded(function(self)
-			showTip(self, nil, self.mark.entries, L.PIN_CLICK)
+			Map.ShowTip(self, nil, self.mark.entries, L.PIN_CLICK)
 		end, "pin enter")
 	)
 	pin:SetScript("OnLeave", function()
@@ -179,7 +179,7 @@ local function makeNote(holder)
 	note:SetScript(
 		"OnEnter",
 		guarded(function(self)
-			showTip(self, L.NOTE_TITLE, self.entries, L.NOTE_CLICK)
+			Map.ShowTip(self, L.NOTE_TITLE, self.entries, L.NOTE_CLICK)
 		end, "note enter")
 	)
 	note:SetScript("OnLeave", function()
@@ -192,6 +192,66 @@ local function makeNote(holder)
 		end, "note click")
 	)
 	return note
+end
+
+-- A gold ring that pulses around one mark for a few seconds: "Open map" in the book points at the vendor with
+-- it. One ring for the whole map, moved to whichever mark (or the corner note) holds the vendor.
+local GLOW_SIZE, GLOW_SECONDS = 46, 8
+local function glowOn(frame)
+	local g = Map.glow
+	if not g then
+		g = CreateFrame("Frame", nil, frame)
+		g.art = g:CreateTexture(nil, "OVERLAY")
+		g.art:SetAllPoints()
+		g.art:SetTexture(MEDIA .. "glow")
+		g.pulse = g:CreateAnimationGroup()
+		local fade = g.pulse:CreateAnimation("Alpha")
+		fade:SetFromAlpha(1)
+		fade:SetToAlpha(0.25)
+		fade:SetDuration(0.55)
+		g.pulse:SetLooping("BOUNCE")
+		Map.glow = g
+	end
+	g:SetParent(frame) -- so it takes the mark's own scale and goes away with it
+	g:ClearAllPoints()
+	g:SetPoint("CENTER", frame, "CENTER", 0, 0)
+	g:SetSize(GLOW_SIZE, GLOW_SIZE)
+	g.on = frame
+	g:Show()
+	g.pulse:Play()
+end
+local function glowOff()
+	local g = Map.glow
+	if g and g.on then
+		g.on = nil
+		g.pulse:Stop()
+		g:Hide()
+	end
+end
+
+-- Point at a vendor on the map for a few seconds (nil stops it).
+function Map.Highlight(key)
+	Map.highlight = key
+	Map.highlightTurn = (Map.highlightTurn or 0) + 1
+	local turn = Map.highlightTurn
+	if key then
+		C_Timer.After(GLOW_SECONDS, function()
+			if Map.highlightTurn == turn then
+				Map.highlight = nil
+				Map.Draw()
+			end
+		end)
+	end
+	Map.Draw()
+end
+
+local function holds(entries, key)
+	for _, entry in ipairs(entries) do
+		if entry.key == key then
+			return true
+		end
+	end
+	return false
 end
 
 -- Put the marks on the world map as it is now. Does nothing while the map is closed.
@@ -209,6 +269,7 @@ function Map.Draw()
 	-- the canvas is zoomed; the marks are not: each one undoes the zoom, and its offset is in its own scale
 	local scale = 1 / canvasScale
 	local w, h = canvas:GetWidth() or 0, canvas:GetHeight() or 0
+	local lit
 	for i, mark in ipairs(layout.marks) do
 		local pin = Map.pins[i]
 		if not pin then
@@ -222,6 +283,9 @@ function Map.Draw()
 		pin.art:SetTexture(MEDIA .. (mark.rumour and "pin_rumour" or "pin"))
 		pin.count:SetText(#mark.entries > 1 and tostring(#mark.entries) or "")
 		pin:Show()
+		if Map.highlight and holds(mark.entries, Map.highlight) then
+			lit = pin
+		end
 	end
 	for i = #layout.marks + 1, #Map.pins do
 		Map.pins[i]:Hide()
@@ -233,8 +297,16 @@ function Map.Draw()
 		Map.note.entries = layout.notes
 		Map.note.count:SetText(tostring(#layout.notes))
 		Map.note:Show()
+		if Map.highlight and holds(layout.notes, Map.highlight) then
+			lit = Map.note
+		end
 	elseif Map.note then
 		Map.note:Hide()
+	end
+	if lit then
+		glowOn(lit)
+	else
+		glowOff()
 	end
 end
 

@@ -13,7 +13,7 @@
 
 **Features**
 
-- Marks on the world map (zone and continent). Vendors that stand together share one mark with a number. Hover for the stock, click to open the book, right click to mark the way.
+- Marks on the world map (zone and continent) and on the minimap for the vendors nearby. Vendors that stand together share one mark with a number. Hover for the stock, click to open the book, right click to mark the way.
 - A parchment book (`/mercader`): search by vendor, item or zone ("who sells Agile Boots?"), pick a zone from a menu, filter by kind, item tooltips, Shift-click to link.
 - A chat line when you open a vendor that has limited stock (can be turned off).
 - "Sold out" memory: a limited item that is gone stays written down, so you know to come back.
@@ -35,7 +35,7 @@ If it helped and you want to support the time it takes to maintain it: https://w
 
 **Qué trae**
 
-- Marcas en el mapa del mundo (zona y continente). Los vendedores que están juntos comparten una marca con un número. Pasando el mouse ves el stock; clic abre el libro; clic derecho marca el camino.
+- Marcas en el mapa del mundo (zona y continente) y en el minimapa para los vendedores cercanos. Los vendedores que están juntos comparten una marca con un número. Pasando el mouse ves el stock; clic abre el libro; clic derecho marca el camino.
 - Un libro de pergamino (`/mercader`): buscar por vendedor, objeto o zona ("¿quién vende Agile Boots?"), elegir una zona de un menú, filtrar por tipo, tooltips de objetos, Shift-clic para linkear.
 - Un aviso en el chat cuando abrís un vendedor con stock limitado (se puede apagar).
 - Memoria de "agotado": un objeto limitado que ya no está queda anotado, para que sepas que hay que volver.

@@ -13,11 +13,13 @@ It works two ways at once:
 
 **On the world map** (M): a gold coin is a vendor you visited; a pale ring is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Almost every rumour has its mark (61 of 64); the three nobody placed are gathered in a small note at the bottom-left corner of their zone's map. The continent map shows the marks of its zones.
 
+**On the minimap**: the vendors of your zone that fall inside what the minimap shows, with the same marks. Hover for the distance in yards and the goods. It can be turned off in Options.
+
 **The book** opens with `/mercader`, the minimap button (right click: this zone's vendors, in chat), a key binding or the addon compartment.
 
 - Left page: search by **vendor, item or zone** ("who sells Agile Boots?", "hillsbrad"), where to look (**This zone**, **Everywhere** or **Zone...**, a menu of the zones that have something, by continent), the kinds of goods (Gear, Potions, Recipes, Bags, Other) and the list. If you hid rumours, a button under the list brings them back.
-- Right page, the chosen vendor: where it is, what it sells and how many were left last time (hover an item for its tooltip; Shift-click links it in chat), and the buttons **Mark the way**, **Open map** and **Forget** (or **Hide**, for a rumour).
-- The Options tab: map marks, rumours, the other faction's vendors, the chat line, the minimap button and the language.
+- Right page, the chosen vendor: where it is, what it sells and how many were left last time (hover an item for its tooltip; Shift-click links it in chat), and the buttons **Mark the way**, **Open map** (the map turns to the vendor's zone and a gold ring pulses around its mark for a few seconds) and **Forget** (or **Hide**, for a rumour).
+- The Options tab: map and minimap marks, rumours, the other faction's vendors, the chat line, the minimap button and the language.
 
 **In chat**, when you open a vendor with limited stock: "Mercader: Lizzarik has limited stock: [Heavy Spiked Mace] x2, [Lesser Healing Potion] x3". It can be turned off in Options.
 
@@ -50,8 +52,8 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 69 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
-- **Not seen in the client yet:** the marks on Forever's map (size, level, zoom), limited stock as `C_MerchantFrame.GetItemInfo` reports it, `C_Map.SetUserWaypoint`, and the rumours' approximate positions.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 75 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- **Not seen in the client yet:** the marks on Forever's map (size, level, zoom) and on the minimap, limited stock as `C_MerchantFrame.GetItemInfo` reports it, `C_Map.SetUserWaypoint`, and the rumours' approximate positions.
 
 If something fails, `/mercader errores` shows the addon's last error to copy into a GitHub issue.
 

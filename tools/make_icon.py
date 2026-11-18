@@ -5,13 +5,14 @@
   addons' icons (the addon compartment and the minimap button use it).
 * Mercader/Media/pin.tga: the map mark of a vendor the player visited (a gold coin with an ink rim), 32x32.
 * Mercader/Media/pin_rumour.tga: the mark of a rumour (the same rim, a pale see-through centre), 32x32.
+* Mercader/Media/glow.tga: the ring that pulses around a mark, 64x64.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA = ROOT / "Mercader" / "Media"
@@ -66,10 +67,20 @@ def pin(rumour: bool) -> Image.Image:
     return im
 
 
+def glow() -> Image.Image:
+    """A soft gold ring, see-through in the middle: it pulses around the mark "Open map" points at."""
+    im = Image.new("RGBA", (S, S), (255, 214, 96, 0))  # the ring's own colour, see-through: the blur stays gold
+    d = ImageDraw.Draw(im)
+    d.ellipse((40, 40, S - 40, S - 40), outline=(255, 214, 96, 255), width=46)
+    im = im.filter(ImageFilter.GaussianBlur(14))
+    return im
+
+
 def main() -> None:
     save(icon(), "icon", 64)
     save(pin(False), "pin", 32)
     save(pin(True), "pin_rumour", 32)
+    save(glow(), "glow", 64)
 
 
 if __name__ == "__main__":

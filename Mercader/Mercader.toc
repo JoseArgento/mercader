@@ -19,5 +19,6 @@ Seed.lua
 Vendors.lua
 Learn.lua
 Map.lua
+Minimap.lua
 UI.lua
 Events.lua

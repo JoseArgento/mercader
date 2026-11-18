@@ -4,7 +4,7 @@ local L = ns.L
 ns.ADDON = ADDON
 
 -- Saved data (MercaderDB), the same for every character of the account:
---   settings = { lang, minimap, minimapAngle, point, pins, rumours, announce, otherSide,
+--   settings = { lang, minimap, minimapAngle, point, pins, minimapPins, rumours, announce, otherSide,
 --                cats = { gear, potion, recipe, bag, other } }
 --   vendors  = { [key] = { name, npc, map, x, y, t, sides = { Alliance = true }, seed = seed key or nil,
 --                          items = { [itemID] = { cat, stock, limited, price, t } } } }
@@ -38,7 +38,7 @@ function ns.InitDB()
 	if s.lang ~= "es" and s.lang ~= "en" then
 		s.lang = "auto"
 	end
-	for key, default in pairs({ minimap = true, pins = true, rumours = true, announce = true, otherSide = false }) do
+	for key, default in pairs({ minimap = true, pins = true, minimapPins = true, rumours = true, announce = true, otherSide = false }) do
 		if type(s[key]) ~= "boolean" then
 			s[key] = default
 		end

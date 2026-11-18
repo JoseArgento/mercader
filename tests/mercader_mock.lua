@@ -189,3 +189,33 @@ end
 function IsShiftKeyDown()
 	return MOCK.shift or false
 end
+
+-- the minimap: 140 px across, its zoom, whether it turns with the player; zones' sizes in yards
+Minimap:SetSize(140, 140)
+MOCK.zoom, MOCK.indoors, MOCK.facing, MOCK.cvars = 0, false, 0, { rotateMinimap = "0" }
+function Minimap:GetZoom()
+	return MOCK.zoom
+end
+function IsIndoors()
+	return MOCK.indoors
+end
+function GetPlayerFacing()
+	return MOCK.facing
+end
+function GetCVar(name)
+	return MOCK.cvars[name]
+end
+MOCK.zoneYards = { [1413] = { 10000, 6000 } } -- width, height
+C_Map.GetWorldPosFromMapPos = function(map, at)
+	local size = MOCK.zoneYards[map]
+	if not size then
+		return nil, nil
+	end
+	-- (north-south, west-east), both growing towards the north and the west, as the game answers
+	local ns_, we = 5000 - at.y * size[2], 3000 - at.x * size[1]
+	return 1, {
+		GetXY = function()
+			return ns_, we
+		end,
+	}
+end

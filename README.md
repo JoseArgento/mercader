@@ -23,11 +23,13 @@ Funciona de dos maneras a la vez:
 
 **En el mapa del mundo** (tecla M): una moneda dorada es un vendedor que visitaste; un aro pálido es un rumor. Los vendedores que están juntos (los de un mismo pueblo) comparten una marca con un número. Pasando el mouse ves quién es, dónde está y qué vende, con cuánto quedaba. Clic: lo abre en el libro. Clic derecho: marca el camino con la flecha del juego. Casi todos los rumores tienen su marca (61 de 64); los tres que nadie ubicó quedan en una notita en la esquina de abajo a la izquierda del mapa de su zona. En el mapa del continente se ven las marcas de sus zonas.
 
+**En el minimapa**: los vendedores de tu zona que quedan dentro de lo que muestra el minimapa, con las mismas marcas (moneda o aro). Pasando el mouse dice a cuántas yardas está y qué vende. Se apaga en Opciones.
+
 **El libro** se abre con `/mercader`, con el botón del minimapa (clic derecho: los vendedores de esta zona, en el chat), con el atajo de teclado o desde el compartimento de addons.
 
 - A la izquierda: buscar por **vendedor, objeto o zona** ("¿quién vende Agile Boots?", "hillsbrad"), dónde mirar (**Esta zona**, **Todo** o **Zona...**, que abre un menú con las zonas que tienen algo, por continente), los tipos de objeto (Equipo, Pociones, Recetas, Bolsas, Otros) y la lista. Si ocultaste rumores, abajo de la lista aparece un botón para traerlos de vuelta.
-- A la derecha, el vendedor elegido: dónde está, qué vende y cuánto quedaba la última vez (pasando el mouse por un objeto ves su tooltip; Shift-clic lo pega en el chat), y los botones **Marcar camino**, **Ver mapa** y **Olvidar** (o **Ocultar**, si es un rumor).
-- La pestaña Opciones: mostrar o no las marcas del mapa, los rumores, los vendedores de la otra facción, el aviso del chat, el botón del minimapa y el idioma.
+- A la derecha, el vendedor elegido: dónde está, qué vende y cuánto quedaba la última vez (pasando el mouse por un objeto ves su tooltip; Shift-clic lo pega en el chat), y los botones **Marcar camino**, **Ver mapa** (abre el mapa en su zona y un anillo dorado late unos segundos alrededor de su marca) y **Olvidar** (o **Ocultar**, si es un rumor).
+- La pestaña Opciones: mostrar o no las marcas del mapa y las del minimapa, los rumores, los vendedores de la otra facción, el aviso del chat, el botón del minimapa y el idioma.
 
 **En el chat**, al abrir un vendedor que tiene stock limitado: "Mercader: Lizzarik tiene stock limitado: [Heavy Spiked Mace] x2, [Lesser Healing Potion] x3". Se apaga en Opciones.
 
@@ -72,11 +74,12 @@ Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Fore
 **Probado:**
 - ✅ Cada función del juego que usa existe en Forever 1.60.1: `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): sin errores. [Addon Sentry](https://github.com/JoseArgento/addon-sentry): "Sin señales de riesgo".
-- ✅ **69 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, el libro, el camino marcado, castellano e inglés.
+- ✅ **75 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
 - ✅ Los 59 identificadores de objeto de la lista, uno por uno contra foreverdb.net (un test los fija).
 
 **Todavía sin ver en el cliente ⏳** (el addon es nuevo; nada de esto se probó dentro del juego):
-- Que las marcas se dibujen bien sobre el mapa de Forever: tamaño, que queden por encima del arte del mapa y que sigan el zoom.
+- Que las marcas se dibujen bien sobre el mapa de Forever: tamaño, que queden por encima del arte del mapa y que sigan el zoom; y el anillo de "Ver mapa".
+- Las marcas del minimapa: que caigan en su lugar (dependen del tamaño de la zona que informa `C_Map.GetWorldPosFromMapPos` y de las yardas que muestra el minimapa en cada zoom, las de siempre de los addons de mapas) y qué pasa adentro de edificios.
 - Que `C_MerchantFrame.GetItemInfo` informe el stock limitado como en retail (`numAvailable`, -1 sin límite) y que el id del vendedor salga de `UnitGUID("npc")`.
 - Que `C_Map.SetUserWaypoint` (el camino marcado) funcione en Forever; si no, el botón avisa que no se puede.
 - Las posiciones aproximadas de los rumores: salen de la wiki a nivel pueblo o lugar, y las de las ciudades son a nivel barrio. `/mercader zonas` muestra si los identificadores de zona coinciden con el cliente.

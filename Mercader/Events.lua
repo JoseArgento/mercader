@@ -1,7 +1,7 @@
 local ADDON, ns = ...
 local L = ns.L
 
-local Learn, Map, V = ns.Learn, ns.Map, ns.Vendors
+local Learn, Map, Mini, V = ns.Learn, ns.Map, ns.Mini, ns.Vendors
 
 -- A purchase changes the stock: the window is read again a moment later (several updates come together).
 local RESCAN_DELAY, ITEMS_DELAY = 0.3, 0.5
@@ -57,6 +57,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
 	elseif event == "PLAYER_LOGIN" then
 		ns.UI.Minimap()
 		Map.Init()
+		Mini.Init()
 		for e in pairs(handlers) do
 			frame:RegisterEvent(e)
 		end

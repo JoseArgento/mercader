@@ -178,6 +178,7 @@ function UI.ShowOnMap(entry)
 			WorldMapFrame:SetMapID(entry.map)
 		end
 	end
+	ns.Map.Highlight(entry.key) -- a ring pulses around its mark for a few seconds
 end
 
 function UI.Forget()
@@ -366,6 +367,7 @@ local OPTION_CHECKS = {
 	{ "rumours", "OPT_RUMOURS" },
 	{ "announce", "OPT_ANNOUNCE" },
 	{ "otherSide", "OPT_OTHER_SIDE" },
+	{ "minimapPins", "OPT_MINIMAP_PINS" },
 	{ "minimap", "OPT_MINIMAP" },
 	{ "minimapMerged", "OPT_MINIMAP_MERGED" },
 }
@@ -393,7 +395,7 @@ local function buildOptions(f, page)
 		c.label:SetWordWrap(true)
 		c.textKey = pair[2]
 		f.checks[key] = c
-		y = y - 40
+		y = y - 36
 	end
 	f.langLabel = P.Label(left, L.OPT_LANG, "strong")
 	f.langLabel:SetPoint("TOPLEFT", 0, y - 6)
