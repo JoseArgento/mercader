@@ -5,6 +5,7 @@
 ## Notes-esMX: Vendedores que valen el viaje, en tu mapa: equipo, pociones, recetas y bolsas de stock limitado. Aprende cada vendedor que visitas y arranca con una lista propia de rumores.
 ## Author: José Argento
 ## Version: @project-version@
+## X-Curse-Project-ID: 1815648
 ## SavedVariables: MercaderDB
 ## IconTexture: Interface\AddOns\Mercader\Media\icon
 ## AddonCompartmentFunc: Mercader_OnAddonCompartmentClick
