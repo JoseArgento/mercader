@@ -469,6 +469,7 @@ end
 
 local OPTION_CHECKS = {
 	{ "pins", "OPT_PINS" },
+	{ "continentPins", "OPT_CONTINENT" },
 	{ "rumours", "OPT_RUMOURS" },
 	{ "announce", "OPT_ANNOUNCE" },
 	{ "otherSide", "OPT_OTHER_SIDE" },
@@ -500,7 +501,7 @@ local function buildOptions(f, page)
 		c.label:SetWordWrap(true)
 		c.textKey = pair[2]
 		f.checks[key] = c
-		y = y - 36
+		y = y - 33
 	end
 	f.langLabel = P.Label(left, L.OPT_LANG, "strong")
 	f.langLabel:SetPoint("TOPLEFT", 0, y - 6)
@@ -734,6 +735,71 @@ function UI.ZoneToChat()
 		ns.Print(L.ZONE_LINE:format(name .. ", " .. V.Where(entry), table.concat(parts, " ")))
 	end
 	return #list
+end
+
+-- What the player's own visits wrote down, as text to copy: one line per vendor with where it stood and what
+-- it had. It is how a position seen in the game gets back into the addon's own list of rumours.
+function UI.ExportText()
+	local lines = { "Mercader 1 " .. (GetLocale and GetLocale() or "?") .. " " .. date("%Y-%m-%d") }
+	local keys = {}
+	for key in pairs(ns.db.vendors) do
+		keys[#keys + 1] = key
+	end
+	table.sort(keys)
+	for _, key in ipairs(keys) do
+		local rec = ns.db.vendors[key]
+		local items = {}
+		for id, it in pairs(rec.items or {}) do
+			items[#items + 1] = id
+		end
+		table.sort(items)
+		for i, id in ipairs(items) do
+			items[i] = id .. ":" .. tostring(rec.items[id].stock or "?")
+		end
+		local sides = {}
+		for side in pairs(rec.sides or {}) do
+			sides[#sides + 1] = side:sub(1, 1)
+		end
+		table.sort(sides)
+		lines[#lines + 1] = table.concat({
+			rec.name or "?",
+			tostring(rec.npc or ""),
+			tostring(rec.map or ""),
+			rec.x and ("%.1f"):format(rec.x * 100) or "",
+			rec.y and ("%.1f"):format(rec.y * 100) or "",
+			table.concat(sides),
+			rec.seed or "",
+			table.concat(items, ","),
+		}, "|")
+	end
+	return table.concat(lines, "\n"), #keys
+end
+
+function UI.Export()
+	if not UI.exportCard then
+		local card = P.Card(ADDON .. "ExportCard", 520, 300, L.EXPORT_TITLE)
+		local hint = P.Label(card.body, L.EXPORT_HINT, "small")
+		hint:SetPoint("TOPLEFT")
+		hint:SetPoint("TOPRIGHT")
+		hint:SetWordWrap(true)
+		card.area = P.TextArea(card.body)
+		card.area:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -8)
+		card.area:SetPoint("BOTTOMRIGHT")
+		UI.exportCard = card
+	end
+	local card = UI.exportCard
+	card.area.box:SetText((UI.ExportText()))
+	card:Show()
+	local edit = card.area.box.GetEditBox and card.area.box:GetEditBox()
+	if edit then
+		if edit.HighlightText then
+			edit:HighlightText()
+		end
+		if edit.SetFocus then
+			edit:SetFocus()
+		end
+	end
+	return card
 end
 
 -- The addon's own errors (Pergamino.Guard), on a card to copy them into an issue.

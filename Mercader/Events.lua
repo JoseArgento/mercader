@@ -123,6 +123,8 @@ onSlash = function(msg)
 		ns.Print(L.RUMOURS_BACK:format(V.UnhideAll()))
 	elseif msg == "zonas" or msg == "zones" then
 		zones()
+	elseif msg == "exportar" or msg == "export" then
+		ns.UI.Export()
 	elseif msg == "marcas" or msg == "marks" then
 		for _, line in ipairs(Map.Report()) do
 			ns.Print(line)

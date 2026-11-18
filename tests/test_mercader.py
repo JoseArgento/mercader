@@ -297,7 +297,14 @@ def test_a_rumour_is_found_by_its_goods_when_the_name_is_in_another_language():
     assert "Defias Profiteer@1436" not in game.keys()
 
 
-def test_two_rumours_with_the_same_goods_are_not_guessed(game):
+def test_on_an_english_client_another_name_is_another_vendor(game):
+    # Jazzik sells a mace that the rumour about Vrang Wildgore also names: he is not Vrang
+    game.open("{ name = 'Jazzik', npc = 3498, items = { {4778, 1, 100} } }")
+    assert game.ns.db.vendors["n3498"].seed is None
+
+
+def test_two_rumours_with_the_same_goods_are_not_guessed():
+    game = Client(locale="esES").login()
     # three rumours of the Barrens sell the Enamelled Broadsword (4765): which one this is cannot be told
     game.open("{ name = 'Alguien', npc = 77, items = { {4765, 1, 100} } }")
     assert game.ns.db.vendors["n77"].seed is None
@@ -392,6 +399,14 @@ def test_a_rumour_without_a_position_goes_to_the_note(game):
 
 def test_marks_on_the_continent(game):
     game.open(LIZZARIK)
+    # off unless the player asks for them: a continent shows every zone's marks at once
+    assert marks(game, 1414) == ([], []) and game.ns.Map.Layout(1414).off is True
+    game.slash("marcas")
+    game.goto(1414)
+    game.slash("marcas")
+    assert "Kalimdor (1414) is a continent: its marks are turned off" in game.chat()[-1]
+    game.goto(1413, 0.57, 0.34)
+    game.ns.db.settings.continentPins = True
     got, notes = marks(game, 1414)
     # the Barrens are drawn at 0.4-0.6 x 0.3-0.6 of Kalimdor: Ratchet (0.62, 0.37) falls on 0.524, 0.411, and
     # Lizzarik, a few steps away at that size, shares its mark, which is no longer only a rumour
@@ -457,21 +472,40 @@ def test_the_marks_sit_above_the_games_explored_areas(game):
 
 def test_mark_sizes(game):
     size = game.ns.Map.PinSize
-    # a zone's map: 20 px on the big map, a little smaller on the small windowed one
-    assert size(False, 1500) == 20 and size(False, 1100) == 20 and size(False, 690) == 17 and size(False, 400) == 16
+    # a zone's map: 16 px on the big map, a little smaller on the small windowed one
+    assert size(False, 1500) == 16 and size(False, 1300) == 16 and size(False, 695) == 14 and size(False, 400) == 14
     # a continent's map: smaller, so a zone's marks do not cover the zone
-    assert size(True, 1500) == 14 and size(True, 690) == 12
+    assert size(True, 1500) == 12 and size(True, 695) == 10
     game.open(LIZZARIK)
     game.run("WorldMapFrame:Show()")
     pin = game.ns.Map.pins[1]
-    assert game.ns.Map.size == 16 and game.run("return ns.Map.pins[1]:GetWidth()") == 16  # the map is 500 px wide here
+    assert game.ns.Map.size == 14 and game.run("return ns.Map.pins[1]:GetWidth()") == 14  # the map is 500 px wide here
     assert pin.count["_text"] == "2" and pin.dot["_shown"]
-    # the continent: smaller marks, and no number on them
+    # zooming in makes the canvas bigger, not the map's window: the marks keep their size
+    game.run("WorldMapFrame:SetSize(1400, 900)")
+    game.m.canvasScale = 3
+    game.run("WorldMapFrame:OnCanvasScaleChanged()")
+    assert game.ns.Map.size == 16
+    game.m.canvasScale = 0.5
+    # the continent, when the player asks for its marks: smaller ones, and no number on them
+    game.ns.db.settings.continentPins = True
     game.m.shownMap = 1414
     game.run("WorldMapFrame:OnMapChanged()")
     pin = game.ns.Map.pins[1]
-    assert game.ns.Map.size == 11 and game.run("return ns.Map.pins[1]:GetWidth()") == 11
+    assert game.ns.Map.size == 12 and game.run("return ns.Map.pins[1]:GetWidth()") == 12
     assert pin.count["_text"] == "" and not pin.dot["_shown"] and len(lua_list(pin.mark.entries)) == 3
+
+
+def test_what_you_saw_as_text_to_copy(game):
+    game.open(LIZZARIK)
+    game.open("{ name = 'Jazzik', npc = 3498, items = { {4778, 0, 100} } }")
+    text, n = game.ns.UI.ExportText()
+    lines = text.split("\n")
+    assert n == 2 and lines[0].startswith("Mercader 1 enUS ")
+    assert lines[1] == "Jazzik|3498|1413|57.0|34.0|A||4778:0"
+    assert lines[2] == "Lizzarik|3658|1413|57.0|34.0|A|Lizzarik@1413|858:3,4777:2,4778:2"
+    game.slash("exportar")
+    assert game.ns.UI.exportCard["_shown"]
 
 
 def test_the_map_report(game):
@@ -866,7 +900,7 @@ def test_saved_variables_are_made_and_mended():
     s = game.ns.db.settings
     assert s.lang == "auto" and s.pins is True and s.rumours is True and s.announce is True and s.otherSide is False
     assert s.cats.gear is False and s.cats.potion is True and s.cats.other is True
-    assert s.minimapPins is True
+    assert s.minimapPins is True and s.continentPins is False
     assert game.run("return type(ns.db.vendors)") == "table"
     assert "MercaderDB" in game.m.savedVariables("MercaderDB")
 
@@ -880,6 +914,8 @@ def test_what_the_first_builds_kept_without_a_limit_goes():
             [4778] = { cat = "gear", stock = 2, limited = true, price = 100, t = 1 } } },
         n3658 = { name = "Lizzarik", map = 1413, x = 0.57, y = 0.34, t = 1, sides = {}, seed = "Lizzarik@1413", items = {
             [858] = { cat = "potion", stock = -1, limited = false, price = 100, t = 1 } } },
+        n9 = { name = "Jazzik", map = 1413, x = 0.6, y = 0.4, t = 1, sides = {}, seed = "Vrang Wildgore@1413", items = {
+            [4777] = { cat = "gear", stock = 1, limited = true, price = 100, t = 1 } } },
         broken = 7,
     } }"""
     game = Client(saved=saved).login()
@@ -888,6 +924,7 @@ def test_what_the_first_builds_kept_without_a_limit_goes():
     assert v["n2"] is not None and v["n2"]["items"][4496] is None and v["n2"]["items"][4778].stock == 2
     # a vendor a rumour was about stays found, even with nothing left written down
     assert v["n3658"] is not None and v["n3658"]["items"][858] is None
+    assert v["n9"].seed is None  # tied to a rumour about somebody else: untied
     assert game.ns.db.version == 2
 
 

@@ -64,6 +64,11 @@ function V.MatchSeed(name, map, itemIDs)
 	if byName then
 		return byName
 	end
+	-- the list's names are the English ones: on an English client another name is another vendor
+	local locale = GetLocale and GetLocale() or "enUS"
+	if locale == "enUS" or locale == "enGB" then
+		return nil
+	end
 	local selling = {}
 	for _, id in ipairs(itemIDs or {}) do
 		selling[id] = true

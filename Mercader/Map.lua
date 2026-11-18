@@ -14,8 +14,8 @@ ns.Map = Map
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 -- A mark's size on screen: on a zone's map, and smaller on a continent's, where a whole zone is a thumb wide.
 -- Both shrink a little more when the map is the small windowed one (see Map.PinSize).
-local PIN_SIZE, PIN_SIZE_CONTINENT, NOTE_SIZE, DOT_RATIO = 20, 14, 22, 0.62
-local SMALL_MAP, FULL_MAP, SMALLEST = 600, 1100, 0.8 -- the map's width on screen, and how far a mark shrinks
+local PIN_SIZE, PIN_SIZE_CONTINENT, NOTE_SIZE, DOT_RATIO = 16, 12, 20, 0.62
+local SMALL_MAP, FULL_MAP, SMALLEST = 700, 1300, 0.85 -- the map's width on screen, and how far a mark shrinks
 -- vendors closer than this (in map units, 0..1) share one mark: a town's shops are a few steps apart
 local CLUSTER = 0.02
 local TIP_VENDORS, TIP_ITEMS = 4, 6
@@ -55,6 +55,10 @@ function Map.Layout(shown)
 	local marks, notes = {}, {}
 	if not (ns.db and ns.db.settings.pins and shown) then
 		return { marks = marks, notes = notes }
+	end
+	-- a continent's map shows every zone's marks at once: only when the player asks for it (Options)
+	if Map.IsContinent(shown) and not ns.db.settings.continentPins then
+		return { marks = marks, notes = notes, off = true }
 	end
 	for _, entry in ipairs(V.List()) do
 		local x, y = Map.Project(entry, shown)
@@ -174,7 +178,7 @@ local function addCount(frame)
 	-- size = the mark's. On a continent's map the marks are too small for a number: plain = true leaves it out
 	-- (the tooltip still names every vendor of the mark).
 	function frame:SetCount(n, always, size, plain)
-		local dot = math.max(11, math.floor((size or PIN_SIZE) * DOT_RATIO + 0.5))
+		local dot = math.max(10, math.floor((size or PIN_SIZE) * DOT_RATIO + 0.5))
 		local shown = (always or n > 1) and not plain
 		self.dot:SetSize(dot, dot)
 		self.dot:SetShown(shown)
@@ -317,7 +321,13 @@ function Map.Draw()
 	local level = Map.PinLevel(map)
 	Map.level = level
 	local continent = Map.IsContinent(map:GetMapID())
-	local size = Map.PinSize(continent, w * canvasScale)
+	-- how wide the map's window is on screen (not the canvas, which grows when the player zooms in)
+	local view = map.GetCanvasContainer and map:GetCanvasContainer()
+	local width = view and view:GetWidth() or 0
+	if not width or width <= 0 then
+		width = w * canvasScale
+	end
+	local size = Map.PinSize(continent, width)
 	Map.size = size
 	local lit
 	for i, mark in ipairs(layout.marks) do
@@ -413,6 +423,10 @@ function Map.Report()
 		return lines
 	end
 	local layout = Map.Layout(shown)
+	if layout.off then
+		lines[#lines + 1] = L.MARKS_CONTINENT:format(ns.ZoneName(shown), shown)
+		return lines
+	end
 	local vendors = 0
 	for _, mark in ipairs(layout.marks) do
 		vendors = vendors + #mark.entries

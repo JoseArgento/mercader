@@ -39,7 +39,7 @@ function ns.InitDB()
 	if s.lang ~= "es" and s.lang ~= "en" then
 		s.lang = "auto"
 	end
-	for key, default in pairs({ minimap = true, pins = true, minimapPins = true, rumours = true, announce = true, otherSide = false }) do
+	for key, default in pairs({ minimap = true, pins = true, continentPins = false, minimapPins = true, rumours = true, announce = true, otherSide = false }) do
 		if type(s[key]) ~= "boolean" then
 			s[key] = default
 		end
@@ -58,10 +58,18 @@ function ns.InitDB()
 	db.names = type(db.names) == "table" and db.names or {} -- item id -> its name, as the client last wrote it
 	-- Only limited stock is written down. The first builds also kept potions and bags that are always in
 	-- stock: those go, and a vendor left with nothing (and that no rumour was about) goes with them.
+	local locale = GetLocale and GetLocale() or "enUS"
+	local english = locale == "enUS" or locale == "enGB"
 	for key, rec in pairs(db.vendors) do
 		if type(rec) ~= "table" or type(rec.items) ~= "table" then
 			db.vendors[key] = nil
 		else
+			-- the first builds could tie a vendor to a rumour about another one that sold the same goods; on
+			-- an English client the names tell them apart, and the wrong tie is undone
+			local seed = rec.seed and ns.Vendors and ns.Vendors.SeedByKey(rec.seed)
+			if rec.seed and (not seed or (english and seed.name ~= rec.name)) then
+				rec.seed = nil
+			end
 			for id, it in pairs(rec.items) do
 				if type(it) ~= "table" or not it.limited then
 					rec.items[id] = nil

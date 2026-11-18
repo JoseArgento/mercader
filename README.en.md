@@ -11,7 +11,7 @@ It works two ways at once:
 
 ## How to use it
 
-**On the world map** (M): every mark is a little pouch: on gold it is a vendor you visited, on pale parchment it is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Almost every rumour has its mark (61 of 64); the three nobody placed are gathered in a small note at the bottom-left corner of their zone's map. The continent map shows the marks of its zones.
+**On the world map** (M): every mark is a little pouch: on gold it is a vendor you visited, on pale parchment it is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Almost every rumour has its mark (61 of 64); the three nobody placed are gathered in a small note at the bottom-left corner of their zone's map. On the continents' maps the marks are off by default, so they do not cover the map; Options turns them on.
 
 **On the minimap**: the vendors of your zone that fall inside what the minimap shows, with the same marks. Hover for the distance in yards and the goods. It can be turned off in Options.
 
@@ -23,7 +23,7 @@ It works two ways at once:
 
 **In chat**, when you open a vendor with limited stock: "Mercader: Lizzarik has limited stock: [Heavy Spiked Mace] x2, [Lesser Healing Potion] x3". It can be turned off in Options.
 
-Commands: `/mercader buscar NAME` (or `search`), `/mercader mapa on|off`, `/mercader rumores` (bring hidden rumours back), `/mercader zonas` (the list's zones as your client names them), `/mercader marcas` (what the map is drawing), `/mercader minimapa on|off` (`juntar on|off`: one button for the whole addon family), `/mercader idioma es|en|auto`, `/mercader errores`.
+Commands: `/mercader buscar NAME` (or `search`), `/mercader mapa on|off`, `/mercader rumores` (bring hidden rumours back), `/mercader zonas` (the list's zones as your client names them), `/mercader marcas` (what the map is drawing), `/mercader exportar` (what you saw, as text to copy), `/mercader minimapa on|off` (`juntar on|off`: one button for the whole addon family), `/mercader idioma es|en|auto`, `/mercader errores`.
 
 ## What it writes down
 
@@ -54,7 +54,7 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 83 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 85 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
 - **Seen in the client** (Forever 1.60.1, 18 Nov 2026): the book, learning a vendor with its limited stock, sold-out items and prices, the chat line, the marks on the zone and continent maps and on the minimap, and "Mark the way".
 - **Not seen in the client yet:** the ring of "Open map", the book's page with no vendor chosen, and each rumour's approximate position.
 
