@@ -72,7 +72,7 @@ Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Fore
 **Probado:**
 - ✅ Cada función del juego que usa existe en Forever 1.60.1: `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): sin errores. [Addon Sentry](https://github.com/JoseArgento/addon-sentry): "Sin señales de riesgo".
-- ✅ **61 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda, marcas agrupadas en la zona y en el continente, el libro, el camino marcado, castellano e inglés.
+- ✅ **62 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda, marcas agrupadas en la zona y en el continente, el libro, el camino marcado, castellano e inglés.
 - ✅ Los 59 identificadores de objeto de la lista, uno por uno contra foreverdb.net (un test los fija).
 
 **Todavía sin ver en el cliente ⏳** (el addon es nuevo; nada de esto se probó dentro del juego):

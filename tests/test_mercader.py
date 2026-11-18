@@ -465,6 +465,18 @@ def test_the_chosen_vendor(game):
     assert not game.ns.UI.Detail().canMark
 
 
+def test_the_book_goes_over_the_open_map(game):
+    def strata():
+        calls = [c for c in lua_list(game.ns.UI.frame["_calls"]) if c[1] == "SetFrameStrata"]
+        return calls[-1][2]
+
+    game.slash("")
+    assert strata() == "HIGH"
+    game.run("WorldMapFrame:Show()")
+    game.ns.UI.Open("Grazlix@1413")  # a click on a mark, with the book already open
+    assert strata() == "FULLSCREEN_DIALOG"
+
+
 def test_a_rumour_nobody_confirmed_says_so(game):
     game.ns.UI.Open("Charys Yserian@1453")
     assert "nobody confirmed it in Forever" in game.ns.UI.Detail().status

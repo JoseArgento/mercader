@@ -50,7 +50,7 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 61 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 62 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
 - **Not seen in the client yet:** the marks on Forever's map (size, level, zoom), limited stock as `C_MerchantFrame.GetItemInfo` reports it, `C_Map.SetUserWaypoint`, and the rumours' approximate positions.
 
 If something fails, `/mercader errores` shows the addon's last error to copy into a GitHub issue.

@@ -368,9 +368,24 @@ local function build()
 	buildOptions(f, f:AddPage("options"))
 	f:SelectTab("vendors")
 	f:HookScript("OnShow", function()
+		UI.Lift()
 		UI.Refresh()
 	end)
 	return f
+end
+
+-- While the game's map is open the book goes over it (the map can sit on a higher layer than the book's own,
+-- and a click on a mark would open the book behind it).
+function UI.Lift()
+	local f = UI.frame
+	if not f then
+		return
+	end
+	local overMap = WorldMapFrame and WorldMapFrame:IsShown() or false
+	f:SetFrameStrata(overMap and "FULLSCREEN_DIALOG" or "HIGH")
+	if f.Raise then
+		f:Raise()
+	end
 end
 
 function UI.SetLanguage(code)
@@ -476,6 +491,7 @@ function UI.Open(key, text)
 	end
 	f:SelectTab("vendors")
 	f:Show()
+	UI.Lift()
 	UI.Refresh()
 end
 
