@@ -90,7 +90,7 @@ local seed = {
 	},
 	{ "Frederick Stover", STORMWIND, "A", at(51, 58, "Trade District"), { 11307 } },
 	{ "Charys Yserian", STORMWIND, "A", at(39, 79, "Mage Quarter"), { 4824, 4825, 4826, 4827, 4828, 4829 }, true },
-	{ "Skolmin Goldfury", IRONFORGE, "A", at(70, 72, "Military Ward"), { 11307 } }, -- seen there in Forever, 18 Nov
+	{ "Skolmin Goldfury", IRONFORGE, "A", at(72, 66, "Military Ward"), { 11307 } }, -- seen at 71.7, 66.1 in Forever, 18 Nov
 	{ "Abigail Sawyer", UNDERCITY, "H", { place = "War Quarter" }, { 11307 } },
 	{ "Brak Durnad", WETLANDS, "A", MENETHIL, { 4817, 4818 } },
 	{ "Jennabink Powerseam", WETLANDS, "A", MENETHIL, { 4790, 4792, 4793, 4827, 4828, 4829, 5772 } },
