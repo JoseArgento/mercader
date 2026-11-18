@@ -90,7 +90,7 @@ local seed = {
 	},
 	{ "Frederick Stover", STORMWIND, "A", at(51, 58, "Trade District"), { 11307 } },
 	{ "Charys Yserian", STORMWIND, "A", at(39, 79, "Mage Quarter"), { 4824, 4825, 4826, 4827, 4828, 4829 }, true },
-	{ "Skolmin Goldfury", IRONFORGE, "A", at(72, 66, "Military Ward"), { 11307 } },
+	{ "Skolmin Goldfury", IRONFORGE, "A", at(70, 72, "Military Ward"), { 11307 } }, -- seen there in Forever, 18 Nov
 	{ "Abigail Sawyer", UNDERCITY, "H", { place = "War Quarter" }, { 11307 } },
 	{ "Brak Durnad", WETLANDS, "A", MENETHIL, { 4817, 4818 } },
 	{ "Jennabink Powerseam", WETLANDS, "A", MENETHIL, { 4790, 4792, 4793, 4827, 4828, 4829, 5772 } },
@@ -120,7 +120,8 @@ local seed = {
 		{ 4836, 4838, 4837, 4827, 4828, 4829, 7561, 5772 },
 	},
 	{ "Kris Legace", HILLSBRAD, nil, at(79, 40, "Durnholde Keep"), { 4794, 4795, 4796, 4830, 4831, 4832 } },
-	{ "Wallace the Blind", SILVERPINE, nil, at(33, 18, "North Tide's Run"), { 4817, 4818, 4777, 4778, 929 } },
+	-- seen at 43.9, 84.5 in Forever on 18 Nov (the wiki's North Tide's Run is where he stands after Cataclysm)
+	{ "Wallace the Blind", SILVERPINE, nil, at(44, 85), { 4817, 4818, 4777, 4778, 929 } },
 	{ "Alexandre Lefevre", SILVERPINE, "H", SEPULCHER, { 4788, 4789 } },
 	{ "Andrea Boynton", SILVERPINE, "H", SEPULCHER, { 4781, 4782, 4786 } },
 	{

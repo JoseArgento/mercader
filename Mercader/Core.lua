@@ -11,6 +11,7 @@ ns.ADDON = ADDON
 --              key is "n<npc id>" (or the name and the map when the client hides the id). x and y are 0..1.
 --              stock: how many were left the last time (-1 = always in stock, 0 = sold out).
 --   hidden   = { [seed key] = true }   rumours the player took off the list
+--   names    = { [itemID] = name }     item names seen, for when the client has not loaded one yet
 
 local listeners = {}
 function ns.On(topic, fn)
@@ -54,6 +55,7 @@ function ns.InitDB()
 	end
 	db.vendors = type(db.vendors) == "table" and db.vendors or {}
 	db.hidden = type(db.hidden) == "table" and db.hidden or {}
+	db.names = type(db.names) == "table" and db.names or {} -- item id -> its name, as the client last wrote it
 	-- Only limited stock is written down. The first builds also kept potions and bags that are always in
 	-- stock: those go, and a vendor left with nothing (and that no rumour was about) goes with them.
 	for key, rec in pairs(db.vendors) do
@@ -144,12 +146,19 @@ function ns.PlayerSide()
 end
 
 -- An item's name, or nil while the client has not loaded it (it is asked for, and "items" fires when it comes).
+-- While it is not loaded, the name read at a vendor's window some other day is used (MercaderDB.names).
 function ns.ItemName(id)
 	local name = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
-	if not name and C_Item and C_Item.RequestLoadItemDataByID then
+	if name and name ~= "" then
+		if ns.db then
+			ns.db.names[id] = name
+		end
+		return name
+	end
+	if C_Item and C_Item.RequestLoadItemDataByID then
 		C_Item.RequestLoadItemDataByID(id)
 	end
-	return name
+	return ns.db and ns.db.names[id] or nil
 end
 
 function ns.ItemQuality(id)

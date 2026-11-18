@@ -34,6 +34,10 @@ local handlers = {
 			ns.Fire("items")
 		end)
 	end,
+	-- the same news, as the game gives it for an item asked for by id
+	ITEM_DATA_LOAD_RESULT = function()
+		ns.ItemsArrived()
+	end,
 	-- the list follows the player's zone; read a moment later, when the client already knows where it is
 	ZONE_CHANGED_NEW_AREA = function()
 		C_Timer.After(1, function()
@@ -41,6 +45,10 @@ local handlers = {
 		end)
 	end,
 }
+
+function ns.ItemsArrived()
+	handlers.GET_ITEM_INFO_RECEIVED()
+end
 
 local onSlash -- the /mercader handler, defined below; guarded once the saved variables are in
 local frame = CreateFrame("Frame")

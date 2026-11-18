@@ -267,11 +267,16 @@ function V.List(opts)
 	return out
 end
 
--- The zones that have something to show with the current kinds, faction and rumours (the search is not
--- applied): { { map, name, continent, count } }, by continent and name. For the book's zone menu.
+-- The zones that have something to show with the current faction and rumours (neither the search nor the
+-- kinds are applied: the menu must work with every kind turned off): { { map, name, continent, count } }, by
+-- continent and name. For the book's zone menu.
 function V.Zones()
 	local byMap, out = {}, {}
-	for _, entry in ipairs(V.List()) do
+	local every = {}
+	for _, cat in ipairs(ns.CATS) do
+		every[cat] = true
+	end
+	for _, entry in ipairs(V.List({ cats = every })) do
 		local z = byMap[entry.map]
 		if not z then
 			z = { map = entry.map, name = ns.ZoneName(entry.map), continent = ns.ContinentName(entry.map), count = 0 }

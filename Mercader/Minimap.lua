@@ -19,8 +19,8 @@ local YARDS = {
 	indoor = { [0] = 300, 240, 180, 120, 80, 50 },
 }
 local EDGE = 0.9 -- a mark this close to the rim is left out (the minimap is round; its corners are not there)
-local TICK = 0.25 -- seconds between two looks
-local PIN_SIZE, TOGETHER = 13, 7 -- marks closer than TOGETHER pixels are one mark
+local TICK = 0.05 -- seconds between two looks: the marks slide with the player's steps, they do not jump
+local PIN_SIZE, TOGETHER = 16, 8 -- marks closer than TOGETHER pixels are one mark
 
 Mini.pins = {}
 local sizes = {} -- map -> { width, height } in yards, or false when the game does not say
@@ -53,8 +53,16 @@ function Mini.ZoneSize(map)
 	return nil
 end
 
--- How many yards from the minimap's centre to its rim, at its zoom.
+-- How many yards from the minimap's centre to its rim. The game says it itself where it can (and then it is
+-- right inside cities and buildings too, where the minimap shows fewer yards); the table by zoom is for a
+-- client that does not.
 function Mini.Radius()
+	if C_Minimap and C_Minimap.GetViewRadius then
+		local radius = C_Minimap.GetViewRadius()
+		if type(radius) == "number" and not (issecretvalue and issecretvalue(radius)) and radius > 0 then
+			return radius
+		end
+	end
 	local zoom = Minimap and Minimap.GetZoom and Minimap:GetZoom() or 0
 	local indoors = IsIndoors and IsIndoors()
 	local across = YARDS[indoors and "indoor" or "outdoor"]

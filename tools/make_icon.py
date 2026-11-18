@@ -3,9 +3,11 @@
 
 * Mercader/Media/icon.tga: an ink coin pouch on a parchment disc with a gold rim, 64x64, like the other
   addons' icons (the addon compartment and the minimap button use it).
-* Mercader/Media/pin.tga: the map mark of a vendor the player visited (a gold coin with an ink rim), 32x32.
-* Mercader/Media/pin_rumour.tga: the mark of a rumour (the same rim, a pale see-through centre), 32x32.
+* Mercader/Media/pin.tga: the map mark of a vendor the player visited (an ink pouch on a gold badge), 64x64.
+* Mercader/Media/pin_rumour.tga: the mark of a rumour (a softer pouch on pale parchment), 64x64.
+* Mercader/Media/dot.tga: the corner disc with the number of vendors a mark stands for, 32x32.
 * Mercader/Media/glow.tga: the ring that pulses around a mark, 64x64.
+* Mercader/Media/emblem.tga: the pouch drawn big for the book's page with no vendor chosen, 256x256.
 """
 
 from __future__ import annotations
@@ -54,16 +56,55 @@ def icon() -> Image.Image:
     return im
 
 
+def pouch(d: ImageDraw.ImageDraw, cx: float, top: float, scale: float, body, cord) -> None:
+    """The coin pouch as a bold silhouette: a round body, a gathered neck with its cord and the open mouth."""
+
+    def s(v: float) -> float:
+        return v * scale
+
+    d.ellipse((cx - s(128), top + s(82), cx + s(128), top + s(312)), fill=body)
+    d.polygon([(cx - s(62), top + s(107)), (cx + s(62), top + s(107)), (cx + s(40), top + s(52)), (cx - s(40), top + s(52))], fill=body)
+    d.polygon([(cx - s(40), top + s(52)), (cx + s(40), top + s(52)), (cx + s(74), top), (cx - s(74), top)], fill=body)
+    d.rounded_rectangle((cx - s(60), top + s(40), cx + s(60), top + s(70)), radius=s(14), fill=cord)
+
+
 def pin(rumour: bool) -> Image.Image:
+    """A map mark: a little pouch on a round badge. Gold for a vendor the player visited; pale parchment
+    with a softer pouch for a rumour. Bold shapes only: it is drawn at about 24 px."""
     im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.ellipse((24, 24, S - 24, S - 24), fill=INK)
+    d.ellipse((10, 10, S - 10, S - 10), fill=INK)
     if rumour:
-        d.ellipse((78, 78, S - 78, S - 78), fill=(242, 227, 192, 150))
+        d.ellipse((50, 50, S - 50, S - 50), fill=(236, 223, 194, 255))
+        pouch(d, S / 2, 118, 0.92, (133, 104, 74, 255), (236, 223, 194, 255))
     else:
-        d.ellipse((70, 70, S - 70, S - 70), fill=GOLD)
-        d.ellipse((120, 120, S - 120, S - 120), fill=GOLD_DEEP)
-        d.ellipse((146, 146, S - 146, S - 146), fill=GOLD)
+        d.ellipse((50, 50, S - 50, S - 50), fill=GOLD_DEEP)
+        d.ellipse((66, 66, S - 66, S - 66), fill=(232, 186, 84, 255))
+        pouch(d, S / 2, 118, 0.92, INK, (255, 236, 170, 255))
+    return im
+
+
+def dot() -> Image.Image:
+    """The small ink disc a mark wears at its corner when it stands for several vendors (the number goes on it)."""
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse((16, 16, S - 16, S - 16), fill=(255, 236, 170, 255))
+    d.ellipse((56, 56, S - 56, S - 56), fill=INK)
+    return im
+
+
+def emblem() -> Image.Image:
+    """The book's emblem for the page shown while no vendor is chosen: the pouch in ink with its gold cord and
+    coin, a ring of ink around it, no disc behind (the parchment shows through)."""
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse((14, 14, S - 14, S - 14), outline=(58, 35, 19, 150), width=6)
+    d.ellipse((30, 30, S - 30, S - 30), outline=(148, 112, 31, 200), width=3)
+    cx = S / 2
+    pouch(d, cx, 104, 1.0, INK, GOLD)
+    d.ellipse((cx - 52, 262, cx + 52, 366), fill=GOLD)
+    d.ellipse((cx - 38, 276, cx + 38, 352), fill=GOLD_DEEP)
+    d.ellipse((cx - 28, 286, cx + 28, 342), fill=GOLD)
     return im
 
 
@@ -78,9 +119,11 @@ def glow() -> Image.Image:
 
 def main() -> None:
     save(icon(), "icon", 64)
-    save(pin(False), "pin", 32)
-    save(pin(True), "pin_rumour", 32)
+    save(pin(False), "pin", 64)
+    save(pin(True), "pin_rumour", 64)
+    save(dot(), "dot", 32)
     save(glow(), "glow", 64)
+    save(emblem(), "emblem", 256)
 
 
 if __name__ == "__main__":

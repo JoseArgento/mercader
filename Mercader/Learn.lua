@@ -47,6 +47,10 @@ function Learn.Read()
 		local info = C_MerchantFrame and C_MerchantFrame.GetItemInfo and C_MerchantFrame.GetItemInfo(i)
 		if id and info then
 			local stock = tonumber(info.numAvailable) or -1
+			-- the window knows the item's name even when the client has not loaded the item yet
+			if type(info.name) == "string" and info.name ~= "" and not (issecretvalue and issecretvalue(info.name)) then
+				ns.db.names[id] = info.name
+			end
 			out[#out + 1] = {
 				id = id,
 				link = GetMerchantItemLink and GetMerchantItemLink(i) or nil,

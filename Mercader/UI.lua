@@ -12,6 +12,7 @@ ns.UI = UI
 local P = Pergamino
 local ROW_H, ITEM_H = 26, 24
 local MUTED = "|cff6b5a45"
+local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 
 UI.scope = "zone" -- "zone" = the zone the player is in, "all" = everywhere, "pick" = the zone in UI.zone
 UI.zone = nil
@@ -54,6 +55,40 @@ function UI.Rows()
 	return rows
 end
 
+-- The right page's vendor when it is one of the rows on the left, nil when nothing of the list is chosen.
+function UI.Shown(rows)
+	for _, row in ipairs(rows or UI.Rows()) do
+		if row.key == UI.selected then
+			return UI.Detail()
+		end
+	end
+	return nil
+end
+
+-- Some names can still be on their way from the server ("Item 11304"): the page is drawn again in a moment,
+-- a few times at most for the same vendor.
+local NAME_RETRY, NAME_TRIES = 1.5, 5
+function UI.WaitForNames(detail)
+	local missing = false
+	for _, it in ipairs(detail.items) do
+		if it.unnamed then
+			missing = true
+			break
+		end
+	end
+	if UI.namesFor ~= detail.entry.key then
+		UI.namesFor, UI.nameTries = detail.entry.key, 0
+	end
+	if not missing or UI.nameWait or UI.nameTries >= NAME_TRIES then
+		return
+	end
+	UI.nameWait, UI.nameTries = true, UI.nameTries + 1
+	C_Timer.After(NAME_RETRY, function()
+		UI.nameWait = false
+		UI.Refresh()
+	end)
+end
+
 -- The right page, as plain data: nil when no vendor is chosen (or the chosen one is gone).
 function UI.Detail()
 	local entry = UI.selected and V.Find(UI.selected)
@@ -79,7 +114,13 @@ function UI.Detail()
 		if it.price and it.price > 0 then
 			stock = stock .. " · " .. ns.Money(it.price)
 		end
-		items[#items + 1] = { id = it.id, link = ns.InkLink(it.id), stock = stock, rumour = it.rumour or false }
+		items[#items + 1] = {
+			id = it.id,
+			link = ns.InkLink(it.id),
+			stock = stock,
+			rumour = it.rumour or false,
+			unnamed = ns.ItemName(it.id) == nil,
+		}
 	end
 	return {
 		entry = entry,
@@ -205,7 +246,7 @@ end
 -- the zone chip takes the picked zone's name): first where to look, then the kinds of goods; the list right
 -- under them, and under the list the chip that brings hidden rumours back, while there are any. Called again
 -- when a text changes.
-local CHIPS_TOP, CHIP_ROW, CHIP_GAP, FOOT = 34, 26, 5, 28
+local CHIPS_TOP, CHIP_ROW, CHIP_GAP, FOOT = 34, 26, 5, 34
 function UI.FlowChips()
 	local f = UI.frame
 	local left = f.pages.vendors.left
@@ -277,6 +318,67 @@ function UI.Unhide()
 	UI.Refresh()
 end
 
+-- The right page while no vendor is chosen: the addon's emblem, what the two kinds of mark mean, and how many
+-- vendors are known. A page of the book, not an empty panel.
+function UI.BuildWelcome(f, right)
+	local w = CreateFrame("Frame", nil, right)
+	w:SetAllPoints()
+	f.welcome = w
+	w.emblem = w:CreateTexture(nil, "ARTWORK")
+	w.emblem:SetSize(132, 132)
+	w.emblem:SetPoint("TOP", w, "TOP", 0, -26)
+	w.emblem:SetTexture(MEDIA .. "emblem")
+	-- every piece hangs from the page's own corners (one horizontal and one vertical answer each)
+	w.title = P.Label(w, "", "heading", "CENTER")
+	w.title:SetPoint("TOPLEFT", w, "TOPLEFT", 0, -172)
+	w.title:SetPoint("TOPRIGHT", w, "TOPRIGHT", 0, -172)
+	w.rule = P.Rule(w)
+	w.rule:SetSize(180, 1)
+	w.rule:SetPoint("TOP", w, "TOP", 0, -198)
+	w.text = P.Label(w, "", "italic", "CENTER")
+	w.text:SetPoint("TOPLEFT", w, "TOPLEFT", 24, -211)
+	w.text:SetPoint("TOPRIGHT", w, "TOPRIGHT", -24, -211)
+	w.text:SetWordWrap(true)
+	-- the legend: each mark as it is drawn on the map, and what it means
+	w.legend = {}
+	for i, kind in ipairs({ "pin", "pin_rumour" }) do
+		local art = w:CreateTexture(nil, "ARTWORK")
+		art:SetSize(24, 24)
+		art:SetTexture(MEDIA .. kind)
+		art:SetPoint("TOPLEFT", w, "TOPLEFT", 36, -(246 + i * 34))
+		local label = P.Label(w, "", "body")
+		label:SetPoint("LEFT", art, "RIGHT", 10, 0)
+		label:SetWidth(280)
+		label:SetWordWrap(true)
+		w.legend[i] = { art = art, label = label }
+	end
+	w.tip = P.Label(w, "", "muted", "CENTER")
+	w.tip:SetPoint("BOTTOMLEFT", w, "BOTTOMLEFT", 12, 4)
+	w.tip:SetPoint("BOTTOMRIGHT", w, "BOTTOMRIGHT", -12, 4)
+	w.tip:SetWordWrap(true)
+	w.stats = P.Label(w, "", "subheading", "CENTER")
+	w.stats:SetPoint("BOTTOMLEFT", w.tip, "TOPLEFT", 0, 12)
+	w.stats:SetPoint("BOTTOMRIGHT", w.tip, "TOPRIGHT", 0, 12)
+	return w
+end
+
+-- How many vendors the book knows and how many of them the player visited (with the faction and rumours
+-- settings, whatever the kinds and the search).
+function UI.Stats()
+	local every = {}
+	for _, cat in ipairs(ns.CATS) do
+		every[cat] = true
+	end
+	local known, visited = 0, 0
+	for _, entry in ipairs(V.List({ cats = every })) do
+		known = known + 1
+		if entry.learned then
+			visited = visited + 1
+		end
+	end
+	return known, visited
+end
+
 local function buildVendors(f, page)
 	local left, right = page.left, page.right
 
@@ -299,7 +401,8 @@ local function buildVendors(f, page)
 	f.scopePick = P.Chip(left, L.SCOPE_PICK, function(self)
 		UI.ZoneMenu(self)
 	end)
-	f.hiddenChip = P.Chip(left, "", function()
+	-- under the list while some rumour is hidden: a leather button, like the page's other actions
+	f.hiddenChip = P.Button(left, "", 190, function()
 		UI.Unhide()
 	end)
 	f.hiddenChip:SetPoint("BOTTOMLEFT", left, "BOTTOMLEFT", 0, 0)
@@ -338,6 +441,8 @@ local function buildVendors(f, page)
 	f.status:SetPoint("TOPLEFT", f.where, "BOTTOMLEFT", 0, -6)
 	f.status:SetPoint("RIGHT", right, "RIGHT", 0, 0)
 	f.status:SetWordWrap(true)
+
+	UI.BuildWelcome(f, right)
 
 	f.mark = P.Button(right, L.WAYPOINT, 136, function()
 		UI.Waypoint(UI.selected and V.Find(UI.selected))
@@ -526,7 +631,6 @@ function UI.Refresh()
 		f.scopePick:SetText(pick)
 		f.scopePick:Fit()
 		f.hiddenChip:SetText(L.HIDDEN_CHIP:format(hidden))
-		f.hiddenChip:Fit()
 		UI.FlowChips()
 	end
 	f.unhide:SetText(L.OPT_UNHIDE:format(hidden))
@@ -536,19 +640,35 @@ function UI.Refresh()
 		f.cats[cat]:SetPressed(s.cats[cat])
 	end
 	f.list:SetData(rows, true)
-	f.empty:SetText(#rows == 0 and (map and L.EMPTY_ZONE or L.EMPTY_ALL) or "")
-	-- the chosen vendor
-	local detail = UI.Detail()
+	local anyKind = false
+	for _, cat in ipairs(ns.CATS) do
+		anyKind = anyKind or s.cats[cat]
+	end
+	f.empty:SetText(#rows == 0 and (not anyKind and L.EMPTY_KINDS or map and L.EMPTY_ZONE or L.EMPTY_ALL) or "")
+	-- the chosen vendor, while it is one of the list's (a vendor the filters took off the list is not shown
+	-- on the right either: nothing is picked then)
+	local detail = UI.Shown(rows)
 	local shown = detail ~= nil
-	f.name:SetText(shown and detail.title or L.PICK_ONE)
+	f.name:SetText(shown and detail.title or "")
 	f.where:SetText(shown and detail.where or "")
 	f.status:SetText(shown and detail.status or "")
+	f.welcome:SetShown(not shown)
+	if not shown then
+		local w = f.welcome
+		w.title:SetText(L.WELCOME_TITLE)
+		w.text:SetText(L.WELCOME_TEXT)
+		w.legend[1].label:SetText(L.WELCOME_VISITED)
+		w.legend[2].label:SetText(L.WELCOME_RUMOUR)
+		w.stats:SetText(L.WELCOME_STATS:format(UI.Stats()))
+		w.tip:SetText(L.WELCOME_TIP)
+	end
 	f.itemsHolder:SetShown(shown)
 	f.mark:SetShown(shown)
 	f.showMap:SetShown(shown)
 	f.forget:SetShown(shown)
 	if shown then
 		f.items:SetData(detail.items, true)
+		UI.WaitForNames(detail)
 		f.mark:SetEnabled(detail.canMark)
 		f.mark:SetAlpha(detail.canMark and 1 or 0.45)
 		f.forget:SetText(detail.forget)

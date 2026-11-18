@@ -9,7 +9,7 @@
 
 **It learns by itself.** Every time you open a vendor's window, Mercader writes down what is worth it, how many were left, the price and where you were standing. Next time that vendor is on your map at the exact spot, shared by all your characters.
 
-**It starts with its own list of rumours.** 64 vendors known for their limited stock, so the map is not empty on day one. A rumour looks different from a vendor you visited (a pale ring instead of a gold coin), its position is approximate (the town's), and the book tells you whether other players already saw that stock in Forever or it is still Classic data. Once you visit, what you saw replaces the rumour.
+**It starts with its own list of rumours.** 64 vendors known for their limited stock, so the map is not empty on day one. A rumour looks different from a vendor you visited (a pouch on pale parchment instead of on gold), its position is approximate (the town's), and the book tells you whether other players already saw that stock in Forever or it is still Classic data. Once you visit, what you saw replaces the rumour.
 
 **Features**
 
@@ -31,7 +31,7 @@ If it helped and you want to support the time it takes to maintain it: https://w
 
 **Aprende solo.** Cada vez que abrís la ventana de un vendedor, Mercader anota lo que vale la pena, cuánto quedaba, el precio y dónde estabas parado. La próxima vez ese vendedor está en tu mapa en el lugar exacto, para todos tus personajes.
 
-**Arranca con una lista propia de rumores.** 64 vendedores conocidos por su stock limitado, para que el mapa no esté vacío el primer día. Un rumor se ve distinto a un vendedor que visitaste (un aro pálido en vez de una moneda dorada), su posición es aproximada (la del pueblo) y el libro te dice si otros jugadores ya vieron ese stock en Forever o si todavía es dato de Classic. Cuando lo visitás, lo que viste vos reemplaza al rumor.
+**Arranca con una lista propia de rumores.** 64 vendedores conocidos por su stock limitado, para que el mapa no esté vacío el primer día. Un rumor se ve distinto a un vendedor que visitaste (una bolsita sobre fondo claro en vez de dorado), su posición es aproximada (la del pueblo) y el libro te dice si otros jugadores ya vieron ese stock en Forever o si todavía es dato de Classic. Cuando lo visitás, lo que viste vos reemplaza al rumor.
 
 **Qué trae**
 

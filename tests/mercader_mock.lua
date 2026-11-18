@@ -85,7 +85,10 @@ C_MerchantFrame = {
 		if not line then
 			return nil
 		end
-		return { name = "x", texture = 1, price = line[3] or 0, stackCount = 1, numAvailable = line[2] or -1, isPurchasable = true }
+		-- the window names the item even when the client has not loaded it (MOCK.merchant.nameless = it does not)
+		local it = MOCK.itemData[line[1]]
+		local name = it and not MOCK.merchant.nameless and it.name or nil
+		return { name = name, texture = 1, price = line[3] or 0, stackCount = 1, numAvailable = line[2] or -1, isPurchasable = true }
 	end,
 }
 function MOCK.openMerchant(merchant)
@@ -178,6 +181,16 @@ end
 function WorldMapFrame:GetCanvasScale()
 	return MOCK.canvasScale
 end
+-- the game's own marks have absolute frame levels from 2000 up; the points of interest sit at 2023 here
+function WorldMapFrame:GetPinFrameLevelsManager()
+	return {
+		GetValidFrameLevel = function(_, kind)
+			MOCK.levelAsked = kind
+			return MOCK.poiLevel
+		end,
+	}
+end
+MOCK.poiLevel = 2023
 function WorldMapFrame:OnMapChanged() end
 function WorldMapFrame:OnCanvasScaleChanged() end
 MOCK.openedMaps = {}
@@ -219,3 +232,9 @@ C_Map.GetWorldPosFromMapPos = function(map, at)
 		end,
 	}
 end
+
+C_Minimap = {
+	GetViewRadius = function()
+		return MOCK.viewRadius
+	end,
+}

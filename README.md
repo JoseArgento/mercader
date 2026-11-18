@@ -21,9 +21,9 @@ Funciona de dos maneras a la vez:
 
 ## Cómo se usa
 
-**En el mapa del mundo** (tecla M): una moneda dorada es un vendedor que visitaste; un aro pálido es un rumor. Los vendedores que están juntos (los de un mismo pueblo) comparten una marca con un número. Pasando el mouse ves quién es, dónde está y qué vende, con cuánto quedaba. Clic: lo abre en el libro. Clic derecho: marca el camino con la flecha del juego. Casi todos los rumores tienen su marca (61 de 64); los tres que nadie ubicó quedan en una notita en la esquina de abajo a la izquierda del mapa de su zona. En el mapa del continente se ven las marcas de sus zonas.
+**En el mapa del mundo** (tecla M): cada marca es una bolsita: sobre fondo dorado es un vendedor que visitaste, sobre fondo claro es un rumor. Los vendedores que están juntos (los de un mismo pueblo) comparten una marca con un número. Pasando el mouse ves quién es, dónde está y qué vende, con cuánto quedaba. Clic: lo abre en el libro. Clic derecho: marca el camino con la flecha del juego. Casi todos los rumores tienen su marca (61 de 64); los tres que nadie ubicó quedan en una notita en la esquina de abajo a la izquierda del mapa de su zona. En el mapa del continente se ven las marcas de sus zonas.
 
-**En el minimapa**: los vendedores de tu zona que quedan dentro de lo que muestra el minimapa, con las mismas marcas (moneda o aro). Pasando el mouse dice a cuántas yardas está y qué vende. Se apaga en Opciones.
+**En el minimapa**: los vendedores de tu zona que quedan dentro de lo que muestra el minimapa, con las mismas marcas. Pasando el mouse dice a cuántas yardas está y qué vende. Se apaga en Opciones.
 
 **El libro** se abre con `/mercader`, con el botón del minimapa (clic derecho: los vendedores de esta zona, en el chat), con el atajo de teclado o desde el compartimento de addons.
 
@@ -76,14 +76,18 @@ Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Fore
 **Probado:**
 - ✅ Cada función del juego que usa existe en Forever 1.60.1: `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): sin errores. [Addon Sentry](https://github.com/JoseArgento/addon-sentry): "Sin señales de riesgo".
-- ✅ **77 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
+- ✅ **82 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
 - ✅ Los 59 identificadores de objeto de la lista, uno por uno contra foreverdb.net (un test los fija).
 
-**Todavía sin ver en el cliente ⏳** (el addon es nuevo; nada de esto se probó dentro del juego):
-- Que las marcas se dibujen bien sobre el mapa de Forever: tamaño, que queden por encima del arte del mapa y que sigan el zoom; y el anillo de "Ver mapa".
-- Las marcas del minimapa: que caigan en su lugar (dependen del tamaño de la zona que informa `C_Map.GetWorldPosFromMapPos` y de las yardas que muestra el minimapa en cada zoom, las de siempre de los addons de mapas) y qué pasa adentro de edificios.
-- Que `C_MerchantFrame.GetItemInfo` informe el stock limitado como en retail (`numAvailable`, -1 sin límite) y que el id del vendedor salga de `UnitGUID("npc")`.
-- Que `C_Map.SetUserWaypoint` (el camino marcado) funcione en Forever; si no, el botón avisa que no se puede.
+**Visto en el cliente** (Forever 1.60.1, 18/11/2026):
+- ✅ El libro: lista, búsqueda, menú de zonas, tipos, idioma, botón único de la familia en el minimapa.
+- ✅ Aprender un vendedor al abrir su ventana: stock limitado ("quedaba 1", "quedaban 2"), agotado y precio, tal como lo informa `C_MerchantFrame.GetItemInfo` (en Forever un objeto limitado agotado sigue en la ventana, con 0).
+- ✅ El vendedor visitado aparece en el minimapa, y "Marcar camino" responde sin error.
+
+**Todavía sin ver en el cliente ⏳:**
+- Las marcas sobre el mapa del mundo. En las primeras pruebas no se veían: quedaban por debajo de la capa de zonas exploradas del juego, que ocupa todo el mapa (los niveles de las marcas del juego arrancan en 2000, según su propio código). Ahora van al nivel de los puntos de interés; `/mercader marcas` dice el nivel y cuántas se dibujaron.
+- Las marcas del minimapa en su lugar justo: ahora usan las yardas que informa el juego (`C_Minimap.GetViewRadius`), que también valen adentro de ciudades y edificios.
+- El anillo de "Ver mapa" y la página del libro sin vendedor elegido.
 - Las posiciones aproximadas de los rumores: salen de la wiki a nivel pueblo o lugar, y las de las ciudades son a nivel barrio. `/mercader zonas` muestra si los identificadores de zona coinciden con el cliente.
 
 **Si algo falla:** `/mercader errores` muestra el último error del addon (se guardan los últimos 10, sin popups) para copiarlo en un issue de GitHub.

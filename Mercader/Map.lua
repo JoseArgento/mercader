@@ -12,12 +12,14 @@ local Map = {}
 ns.Map = Map
 
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
-local PIN_SIZE, NOTE_SIZE = 18, 22
+local PIN_SIZE, NOTE_SIZE, DOT_SIZE = 24, 26, 15
 -- vendors closer than this (in map units, 0..1) share one mark: a town's shops are a few steps apart
 local CLUSTER = 0.02
 local TIP_VENDORS, TIP_ITEMS = 4, 6
--- above the map's own art and labels (the game's marks sit a few hundred levels over the canvas)
-local PIN_LEVEL = 500
+-- The game gives its own marks absolute frame levels from 2000 up (MapCanvas_PinFrameLevelsManager), and the
+-- lowest of them, the explored-areas overlay, is as big as the whole map: a mark of ours below 2000 is drawn
+-- under it and is not seen. Ours go where the game puts its points of interest (and other addons theirs).
+local PIN_LEVEL_TYPE, PIN_LEVEL_FALLBACK = "PIN_FRAME_LEVEL_AREA_POI", 2100
 local CONTINENT = 2 -- Enum.UIMapType.Continent
 
 -- Where an entry falls on the map being shown: its own zone, or its zone drawn on the continent.
@@ -132,16 +134,41 @@ end
 
 Map.pins = {}
 
+-- The frame level for our marks on this map (see PIN_LEVEL_TYPE).
+function Map.PinLevel(map)
+	local manager = map and map.GetPinFrameLevelsManager and map:GetPinFrameLevelsManager()
+	if manager and manager.GetValidFrameLevel then
+		local ok, level = pcall(manager.GetValidFrameLevel, manager, PIN_LEVEL_TYPE)
+		if ok and type(level) == "number" and level > 0 then
+			return level
+		end
+	end
+	return PIN_LEVEL_FALLBACK
+end
+
+-- The number of vendors a mark stands for, on a small ink disc at its corner.
+local function addCount(frame)
+	frame.dot = frame:CreateTexture(nil, "OVERLAY", nil, 1)
+	frame.dot:SetSize(DOT_SIZE, DOT_SIZE)
+	frame.dot:SetPoint("CENTER", frame, "BOTTOMRIGHT", -3, 3)
+	frame.dot:SetTexture(MEDIA .. "dot")
+	frame.count = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	frame.count:SetPoint("CENTER", frame.dot, "CENTER", 0, 0)
+	frame.count:SetTextColor(1, 0.93, 0.67)
+	function frame:SetCount(n, always)
+		local shown = always or n > 1
+		self.dot:SetShown(shown)
+		self.count:SetText(shown and tostring(n) or "")
+	end
+end
+
 local function makePin(canvas)
 	local pin = CreateFrame("Button", nil, canvas)
 	pin:SetSize(PIN_SIZE, PIN_SIZE)
-	pin:SetFrameLevel((canvas:GetFrameLevel() or 0) + PIN_LEVEL)
 	pin:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	pin.art = pin:CreateTexture(nil, "ARTWORK")
 	pin.art:SetAllPoints()
-	pin.count = pin:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	pin.count:SetPoint("CENTER", 0, 0)
-	pin.count:SetTextColor(0.16, 0.09, 0.04) -- ink: it is read on gold or on parchment
+	addCount(pin)
 	pin:SetScript(
 		"OnEnter",
 		guarded(function(self)
@@ -168,14 +195,11 @@ end
 local function makeNote(holder)
 	local note = CreateFrame("Button", nil, holder)
 	note:SetSize(NOTE_SIZE, NOTE_SIZE)
-	note:SetPoint("BOTTOMLEFT", holder, "BOTTOMLEFT", 10, 10)
-	note:SetFrameLevel((holder:GetFrameLevel() or 0) + 80)
+	note:SetPoint("BOTTOMLEFT", holder, "BOTTOMLEFT", 12, 12)
 	note.art = note:CreateTexture(nil, "ARTWORK")
 	note.art:SetAllPoints()
 	note.art:SetTexture(MEDIA .. "pin_rumour")
-	note.count = note:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	note.count:SetPoint("CENTER", 0, 0)
-	note.count:SetTextColor(0.16, 0.09, 0.04)
+	addCount(note)
 	note:SetScript(
 		"OnEnter",
 		guarded(function(self)
@@ -196,7 +220,7 @@ end
 
 -- A gold ring that pulses around one mark for a few seconds: "Open map" in the book points at the vendor with
 -- it. One ring for the whole map, moved to whichever mark (or the corner note) holds the vendor.
-local GLOW_SIZE, GLOW_SECONDS = 46, 8
+local GLOW_SIZE, GLOW_SECONDS = 58, 8
 local function glowOn(frame)
 	local g = Map.glow
 	if not g then
@@ -269,6 +293,8 @@ function Map.Draw()
 	-- the canvas is zoomed; the marks are not: each one undoes the zoom, and its offset is in its own scale
 	local scale = 1 / canvasScale
 	local w, h = canvas:GetWidth() or 0, canvas:GetHeight() or 0
+	local level = Map.PinLevel(map)
+	Map.level = level
 	local lit
 	for i, mark in ipairs(layout.marks) do
 		local pin = Map.pins[i]
@@ -277,11 +303,12 @@ function Map.Draw()
 			Map.pins[i] = pin
 		end
 		pin.mark = mark
+		pin:SetFrameLevel(level)
 		pin:SetScale(scale)
 		pin:ClearAllPoints()
 		pin:SetPoint("CENTER", canvas, "TOPLEFT", mark.x * w / scale, -mark.y * h / scale)
 		pin.art:SetTexture(MEDIA .. (mark.rumour and "pin_rumour" or "pin"))
-		pin.count:SetText(#mark.entries > 1 and tostring(#mark.entries) or "")
+		pin:SetCount(#mark.entries)
 		pin:Show()
 		if Map.highlight and holds(mark.entries, Map.highlight) then
 			lit = pin
@@ -295,7 +322,8 @@ function Map.Draw()
 			Map.note = makeNote(map.GetCanvasContainer and map:GetCanvasContainer() or map)
 		end
 		Map.note.entries = layout.notes
-		Map.note.count:SetText(tostring(#layout.notes))
+		Map.note:SetFrameLevel(level + 5)
+		Map.note:SetCount(#layout.notes, true)
 		Map.note:Show()
 		if Map.highlight and holds(layout.notes, Map.highlight) then
 			lit = Map.note
@@ -377,7 +405,8 @@ function Map.Report()
 			drawn,
 			canvas:GetWidth() or 0,
 			canvas:GetHeight() or 0,
-			map.GetCanvasScale and map:GetCanvasScale() or 0
+			map.GetCanvasScale and map:GetCanvasScale() or 0,
+			Map.level or 0
 		)
 	else
 		lines[#lines + 1] = L.MARKS_CLOSED

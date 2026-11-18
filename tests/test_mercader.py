@@ -97,7 +97,7 @@ def test_toc_is_for_forever_and_has_its_art():
     lines = toc_lines()
     assert "## Interface: 16001" in lines
     assert "## SavedVariables: MercaderDB" in lines
-    for name in ("icon", "pin", "pin_rumour", "glow"):
+    for name in ("icon", "pin", "pin_rumour", "dot", "glow", "emblem"):
         assert (ADDON / "Media" / f"{name}.tga").exists()
     assert toc_files()[0] == "Libs/Pergamino/Pergamino.lua"
 
@@ -439,6 +439,22 @@ def test_the_marks_are_drawn_on_the_canvas(game):
     assert shown() == [] and not game.ns.Map.note["_shown"]
 
 
+def test_the_marks_sit_above_the_games_explored_areas(game):
+    # the game's explored-areas overlay covers the whole map at frame level 2001: a mark below it is not seen
+    def level(frame):
+        return [c[2] for c in lua_list(frame["_calls"]) if c[1] == "SetFrameLevel"][-1]
+
+    game.run("WorldMapFrame:Show()")
+    assert game.m.levelAsked == "PIN_FRAME_LEVEL_AREA_POI"
+    assert [level(pin) for pin in lua_list(game.ns.Map.pins)] == [2023, 2023, 2023]
+    game.m.shownMap = 1437
+    game.run("WorldMapFrame:OnMapChanged()")
+    assert level(game.ns.Map.note) == 2028
+    # a client whose map does not say: still above 2000
+    game.run("WorldMapFrame.GetPinFrameLevelsManager = nil ns.Map.Draw()")
+    assert level(game.ns.Map.pins[1]) == 2100
+
+
 def test_the_map_report(game):
     game.slash("marcas")
     lines = game.chat()[-3:]
@@ -447,7 +463,7 @@ def test_the_map_report(game):
     assert "The map is closed" in lines[2]
     game.run("WorldMapFrame:Show()")
     game.slash("marks")
-    assert "Map open: 3 marks drawn, canvas 1000 x 600, zoom 0.50." in game.chat()[-1]
+    assert "Map open: 3 marks drawn, canvas 1000 x 600, zoom 0.50, level 2023." in game.chat()[-1]
     game.goto(None)
     game.run("WorldMapFrame:Hide()")
     game.slash("marcas")
@@ -508,6 +524,11 @@ def test_minimap_maths(game):
 
 
 def test_minimap_sizes(game):
+    # the game says how many yards the minimap shows (right in cities and buildings too)
+    game.m.viewRadius = 150
+    assert game.ns.Mini.Radius() == 150
+    # a client that does not: the table by zoom
+    game.m.viewRadius = None
     assert game.ns.Mini.Radius() == pytest.approx(233.333, abs=0.01)
     game.m.zoom = 5
     assert game.ns.Mini.Radius() == pytest.approx(66.667, abs=0.01)
@@ -686,8 +707,8 @@ def test_bring_hidden_rumours_back_with_a_click(game):
     game.ns.UI.Forget()
     game.ns.UI.Open("Vexspindle@1413")
     game.ns.UI.Forget()
-    assert "The chip under the list" in game.chat()[-1]
-    assert f.hiddenChip["_shown"] and f.hiddenChip["_text"] == "2 hidden · show"
+    assert "The button under the list" in game.chat()[-1]
+    assert f.hiddenChip["_shown"] and f.hiddenChip["_text"] == "Show hidden (2)"
     assert f.unhide["_text"] == "Show the hidden rumours (2)"
     assert "Grazlix" not in [r.name for r in rows(game)]
     f.hiddenChip["_scripts"].OnClick(f.hiddenChip)
@@ -732,21 +753,81 @@ def test_open_the_map_on_the_vendors_zone(game):
 
 
 def test_item_names_that_arrive_late(game):
+    # a rumour's item the client has not loaded: "Item 4765" for now, asked for, and looked at again in a moment
+    game.run("MOCK.itemData[4765].cached = false")
+    game.open(LIZZARIK)
+    game.ns.UI.Open("n3658")
+    items = {it.id: it for it in lua_list(game.ns.UI.Detail()["items"])}
+    assert "[Item 4765]" in items[4765].link and items[4765].unnamed and not items[4778].unnamed
+    assert 4765 in lua_list(game.m.requested)
+    assert len(lua_list(game.m.timers)) == 1  # the page waits for the name
+    game.m.cacheItem(4765)
+    game.m.runTimers()
+    items = {it.id: it for it in lua_list(game.ns.UI.Detail()["items"])}
+    assert "[Enamelled Broadsword]" in items[4765].link and not items[4765].unnamed
+    assert len(lua_list(game.m.timers)) == 0  # every name is there: no more waiting
+    # the game's own news that items arrived redraw the page once for the whole batch
+    fired = []
+    game.ns.On("items", lambda: fired.append(1))
+    game.fire("GET_ITEM_INFO_RECEIVED", 4778, True)
+    game.fire("ITEM_DATA_LOAD_RESULT", 4777, True)
+    game.m.runTimers()
+    assert fired == [1]
+
+
+def test_the_name_read_at_the_window_is_kept(game):
+    # the client has not loaded the item, but the vendor's window named it: that name is used, today and later
     game.run("MOCK.itemData[4778].cached = false")
     game.open(LIZZARIK)
     game.ns.UI.Open("n3658")
     items = {it.id: it for it in lua_list(game.ns.UI.Detail()["items"])}
-    assert "[Item 4778]" in items[4778].link
-    assert 4778 in lua_list(game.m.requested)
-    game.m.cacheItem(4778)
-    fired = []
-    game.ns.On("items", lambda: fired.append(1))
-    game.fire("GET_ITEM_INFO_RECEIVED", 4778, True)
-    game.fire("GET_ITEM_INFO_RECEIVED", 4777, True)
-    game.m.runTimers()
-    assert fired == [1]
-    items = {it.id: it for it in lua_list(game.ns.UI.Detail()["items"])}
-    assert "[Heavy Spiked Mace]" in items[4778].link
+    assert "[Heavy Spiked Mace]" in items[4778].link and not items[4778].unnamed
+    assert game.ns.db.names[4778] == "Heavy Spiked Mace"
+    assert game.keys(text="'spiked'")[0] == "n3658"  # and the search finds it
+
+
+def test_a_name_that_never_comes_stops_being_asked_for(game):
+    game.run("MOCK.itemData[4765].cached = false")
+    game.open(LIZZARIK)
+    game.ns.UI.Open("n3658")
+    for _ in range(12):
+        game.m.runTimers()
+    assert game.ns.UI.nameTries == 5 and len(lua_list(game.m.timers)) == 0
+
+
+def test_nothing_picked_shows_the_books_own_page(game):
+    game.open(LIZZARIK)
+    game.slash("")
+    f = game.ns.UI.frame
+    w = f.welcome
+    assert w["_shown"] and not f.itemsHolder["_shown"] and f.name["_text"] == ""
+    assert w.title["_text"] == "Vendors worth the trip" and w.emblem.texture.endswith("emblem")
+    assert w.legend[1].art.texture.endswith("pin") and w.legend[2].art.texture.endswith("pin_rumour")
+    assert "Rumour" in w.legend[2].label["_text"]
+    # what an Alliance character can see: 64 less the 17 of the Horde, and Lizzarik visited
+    assert w.stats["_text"] == "Known: 47 · Visited: 1"
+    game.ns.UI.Open("n3658")
+    assert not w["_shown"] and f.itemsHolder["_shown"] and f.name["_text"] == "Lizzarik"
+    # the list turns to a zone where he is not: nothing of the list is picked, so the right page says so
+    game.ns.UI.PickZone(1424)
+    assert w["_shown"] and not f.mark["_shown"] and f.name["_text"] == ""
+    game.ns.UI.PickZone(1413)
+    assert not w["_shown"] and f.name["_text"] == "Lizzarik"  # back on the list, back on the page
+
+
+def test_every_kind_turned_off(game):
+    game.slash("")
+    f = game.ns.UI.frame
+    for cat in ("gear", "potion", "recipe", "bag", "other"):
+        game.ns.db.settings.cats[cat] = False
+    game.ns.UI.Refresh()
+    assert rows(game) == [] and "Every kind of goods is turned off" in f.empty["_text"]
+    # the zone menu still lists the zones, and one can be picked
+    f.scopePick["_scripts"].OnClick(f.scopePick)
+    radios = [i.text for i in lua_list(game.m.lastMenu["items"]) if i.kind == "radio"]
+    assert "The Barrens (5)" in radios
+    game.m.clickMenu("Hillsbrad Foothills (3)")
+    assert game.ns.UI.zone == 1424 and f.scopePick["_text"] == "Hillsbrad Foothills"
 
 
 def test_zone_to_chat(game):
