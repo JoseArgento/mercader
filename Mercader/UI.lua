@@ -523,6 +523,11 @@ local function buildOptions(f, page)
 		UI.Unhide()
 	end)
 	f.unhide:SetPoint("TOPLEFT", f.langLabel, "BOTTOMLEFT", 0, -48)
+	-- what the player saw, as text to copy: the way a position seen in the game gets into the addon's list
+	f.export = P.Button(left, L.OPT_EXPORT, 300, function()
+		UI.Export()
+	end)
+	f.export:SetPoint("TOPLEFT", f.unhide, "BOTTOMLEFT", 0, -8)
 	f.about = P.Label(right, L.OPT_ABOUT, "body")
 	f.about:SetPoint("TOPLEFT")
 	f.about:SetPoint("TOPRIGHT")
@@ -603,6 +608,7 @@ function UI.ApplyTexts()
 		c.label:SetText(L[c.textKey])
 	end
 	f.langLabel:SetText(L.OPT_LANG)
+	f.export:SetText(L.OPT_EXPORT)
 	for _, code in ipairs(LANGS) do
 		chip(f.langs[code], L.LANG_NAMES[code])
 	end

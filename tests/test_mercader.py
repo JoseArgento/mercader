@@ -506,6 +506,13 @@ def test_what_you_saw_as_text_to_copy(game):
     assert lines[2] == "Lizzarik|3658|1413|57.0|34.0|A|Lizzarik@1413|858:3,4777:2,4778:2"
     game.slash("exportar")
     assert game.ns.UI.exportCard["_shown"]
+    # and from the Options page, without a command
+    game.ns.UI.exportCard["_shown"] = False
+    game.slash("")
+    f = game.ns.UI.frame
+    assert f.export["_text"] == "Copy what I saw (to improve the list)"
+    f.export["_scripts"].OnClick(f.export)
+    assert game.ns.UI.exportCard["_shown"]
 
 
 def test_the_map_report(game):

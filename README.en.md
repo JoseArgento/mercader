@@ -48,6 +48,8 @@ It was put together by hand, item by item, on 18 Nov 2026. It does not copy any 
 
 Mercader takes none of this as true: it is a starting point, and what you see replaces it.
 
+**How it gets exact.** The list's positions are corrected with what players see in the game: in Options, "Copy what I saw" (or `/mercader exportar`) gives your visited vendors as text; paste it in an [issue](https://github.com/JoseArgento/mercader/issues) and those positions go into the next version.
+
 ## Install
 
 Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever folder (`World of Warcraft\_forever_\Interface\AddOns`).

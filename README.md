@@ -68,6 +68,8 @@ La armé a mano, objeto por objeto, el 18/11/2026. No copia la base de datos de 
 
 Mercader no da nada de esto por cierto: es un punto de partida, y lo que ves vos lo reemplaza.
 
+**Cómo se vuelve exacta.** Las posiciones de la lista se corrigen con lo que los jugadores ven en el juego: en Opciones, "Copiar lo que vi" (o `/mercader exportar`) da tus vendedores visitados como texto; pegalo en un [issue](https://github.com/JoseArgento/mercader/issues) y esas posiciones entran en la versión siguiente. Las de Wallace the Blind y Skolmin Goldfury ya salieron así.
+
 ## Instalar
 
 Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Forever del juego (`World of Warcraft\_forever_\Interface\AddOns`).
