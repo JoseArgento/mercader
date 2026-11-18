@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.1.0
+## Sin publicar
+
+- **El icono de cada objeto en su renglón**, en la página del vendedor: el mismo dibujo que tiene en la bolsa (lo da el juego; el addon no trae ninguno), chico y con un borde de tinta. Lo que es rumor sale más tenue.
+
+## 0.1.0 (2026-11-18)
 
 - Primera versión. Anota lo que vale la pena de cada vendedor que visitás (solo lo que tiene stock limitado: equipo, pociones, recetas, bolsas y otros objetos), con cuánto quedaba y dónde estabas.
 - Marcas propias en el mapa del mundo: una bolsita sobre fondo dorado para lo visitado y sobre fondo claro para los rumores, una marca con número para los vendedores que están juntos y una nota para los rumores sin posición. En los mapas de los continentes, solo si lo prendés en Opciones.

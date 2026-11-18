@@ -169,6 +169,18 @@ function ns.ItemName(id)
 	return ns.db and ns.db.names[id] or nil
 end
 
+-- The item's own icon, as the client draws it in a bag (a file id of the game, asked for while it runs: the
+-- addon ships none of them). The game's question mark while the client does not know the item.
+local UNKNOWN_ICON = 134400
+function ns.ItemIcon(id)
+	local icon = C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)
+	if not icon and C_Item and C_Item.GetItemInfoInstant then
+		local _
+		_, _, _, _, icon = C_Item.GetItemInfoInstant(id)
+	end
+	return icon or UNKNOWN_ICON
+end
+
 function ns.ItemQuality(id)
 	return C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(id) or nil
 end

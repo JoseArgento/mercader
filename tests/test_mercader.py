@@ -684,6 +684,30 @@ def test_the_book_opens_on_everything_when_the_zone_has_nothing():
     assert game.ns.UI.scope == "all"
 
 
+def test_an_item_line_shows_the_items_own_icon(game):
+    game.open(LIZZARIK)
+    game.ns.UI.Open("n3658")
+    items = lua_list(game.ns.UI.Detail()["items"])
+    assert items[0].id == 4777 and items[0].icon == 130000 + 4777  # the client's icon of that item
+    out = game.run(
+        """
+        local d = ns.UI.Detail()
+        local seen, rumour
+        for _, it in ipairs(d.items) do
+            if it.rumour then rumour = rumour or it else seen = seen or it end
+        end
+        local row = CreateFrame("Button")
+        ns.UI.InitItem(row, seen)
+        local a = { row.icon.texture, row.icon:GetAlpha() }
+        ns.UI.InitItem(row, rumour) -- the same line, used again for a rumoured item
+        return a[1] == seen.icon, a[2], row.icon.texture == rumour.icon, row.icon:GetAlpha()
+        """
+    )
+    assert out[0] is True and out[1] == 1 and out[2] is True and out[3] < 1  # a rumoured item is fainter
+    # an item the client knows nothing about gets the game's question mark, never an empty square
+    assert game.run("return ns.ItemIcon(999999)") == 134400
+
+
 def test_the_chosen_vendor(game):
     game.open(LIZZARIK)
     game.ns.UI.Open("n3658")

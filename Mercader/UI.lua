@@ -11,6 +11,7 @@ local UI = {}
 ns.UI = UI
 local P = Pergamino
 local ROW_H, ITEM_H = 26, 24
+local ICON, RUMOUR_ALPHA = 18, 0.55 -- an item's icon on its line, and how faint a rumoured one is
 local MUTED = "|cff6b5a45"
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 
@@ -117,6 +118,7 @@ function UI.Detail()
 		items[#items + 1] = {
 			id = it.id,
 			link = ns.InkLink(it.id),
+			icon = ns.ItemIcon(it.id),
 			stock = stock,
 			rumour = it.rumour or false,
 			unnamed = ns.ItemName(it.id) == nil,
@@ -159,8 +161,17 @@ UI.InitRow = initRow -- for the tests
 
 local function initItem(row, item)
 	if not row.link then
+		-- the item's own icon, small, on a square of ink that shows as a thin border around it
+		row.iconEdge = row:CreateTexture(nil, "BACKGROUND")
+		row.iconEdge:SetSize(ICON + 2, ICON + 2)
+		row.iconEdge:SetPoint("LEFT", 5, 0)
+		row.iconEdge:SetColorTexture(P.INK[1], P.INK[2], P.INK[3], 0.85)
+		row.icon = row:CreateTexture(nil, "ARTWORK")
+		row.icon:SetSize(ICON, ICON)
+		row.icon:SetPoint("CENTER", row.iconEdge, "CENTER", 0, 0)
+		row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- without the icon's own grey edge
 		row.link = P.Label(row, "", "body")
-		row.link:SetPoint("LEFT", 6, 0)
+		row.link:SetPoint("LEFT", row.iconEdge, "RIGHT", 6, 0)
 		row.link:SetWordWrap(false)
 		row.stock = P.Label(row, "", "small", "RIGHT")
 		row.stock:SetPoint("RIGHT", -6, 0)
@@ -180,6 +191,10 @@ local function initItem(row, item)
 			GameTooltip:Hide()
 		end)
 	end
+	row.icon:SetTexture(item.icon)
+	-- what nobody confirmed yet is drawn fainter, like its "not confirmed"
+	row.icon:SetAlpha(item.rumour and RUMOUR_ALPHA or 1)
+	row.iconEdge:SetAlpha(item.rumour and RUMOUR_ALPHA or 1)
 	row.link:SetText(item.link)
 	row.stock:SetText(item.rumour and (MUTED .. item.stock .. "|r") or item.stock)
 end

@@ -38,6 +38,10 @@ C_Item = {
 		end
 		return id, "", "", "", 134400, it.class, it.sub
 	end,
+	GetItemIconByID = function(v)
+		local id = idOf(v)
+		return MOCK.itemData[id] and (130000 + id) or nil
+	end,
 	GetItemNameByID = function(v)
 		local it = MOCK.itemData[idOf(v)]
 		return it and it.cached ~= false and it.name or nil
