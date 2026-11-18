@@ -76,19 +76,18 @@ Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Fore
 **Probado:**
 - ✅ Cada función del juego que usa existe en Forever 1.60.1: `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): sin errores. [Addon Sentry](https://github.com/JoseArgento/addon-sentry): "Sin señales de riesgo".
-- ✅ **82 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
+- ✅ **83 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
 - ✅ Los 59 identificadores de objeto de la lista, uno por uno contra foreverdb.net (un test los fija).
 
 **Visto en el cliente** (Forever 1.60.1, 18/11/2026):
 - ✅ El libro: lista, búsqueda, menú de zonas, tipos, idioma, botón único de la familia en el minimapa.
-- ✅ Aprender un vendedor al abrir su ventana: stock limitado ("quedaba 1", "quedaban 2"), agotado y precio, tal como lo informa `C_MerchantFrame.GetItemInfo` (en Forever un objeto limitado agotado sigue en la ventana, con 0).
-- ✅ El vendedor visitado aparece en el minimapa, y "Marcar camino" responde sin error.
+- ✅ Aprender un vendedor al abrir su ventana: stock limitado ("quedaba 1", "quedaban 2"), agotado y precio, tal como lo informa `C_MerchantFrame.GetItemInfo` (en Forever un objeto limitado agotado sigue en la ventana, con 0), y el aviso en el chat.
+- ✅ Las marcas en el mapa de la zona y en el del continente (van al nivel de los puntos de interés del juego: las marcas del juego arrancan en el nivel 2000 y por debajo quedaban tapadas por la capa de zonas exploradas) y las del minimapa, con las yardas que informa `C_Minimap.GetViewRadius`.
+- ✅ "Marcar camino" responde sin error.
 
 **Todavía sin ver en el cliente ⏳:**
-- Las marcas sobre el mapa del mundo. En las primeras pruebas no se veían: quedaban por debajo de la capa de zonas exploradas del juego, que ocupa todo el mapa (los niveles de las marcas del juego arrancan en 2000, según su propio código). Ahora van al nivel de los puntos de interés; `/mercader marcas` dice el nivel y cuántas se dibujaron.
-- Las marcas del minimapa en su lugar justo: ahora usan las yardas que informa el juego (`C_Minimap.GetViewRadius`), que también valen adentro de ciudades y edificios.
 - El anillo de "Ver mapa" y la página del libro sin vendedor elegido.
-- Las posiciones aproximadas de los rumores: salen de la wiki a nivel pueblo o lugar, y las de las ciudades son a nivel barrio. `/mercader zonas` muestra si los identificadores de zona coinciden con el cliente.
+- Las posiciones aproximadas de los rumores, una por una: salen de la wiki a nivel pueblo o lugar, y las de las ciudades son a nivel barrio.
 
 **Si algo falla:** `/mercader errores` muestra el último error del addon (se guardan los últimos 10, sin popups) para copiarlo en un issue de GitHub.
 

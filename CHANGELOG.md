@@ -8,4 +8,4 @@
 - Marcas en el minimapa para los vendedores cercanos de tu zona, y un anillo que late alrededor de la marca al tocar "Ver mapa".
 - Libro de pergamino (Pergamino 9): búsqueda por vendedor, objeto o zona, menú de zonas por continente, tipos, "esta zona / todo", botón para traer de vuelta los rumores ocultos, detalle con tooltips, marcar el camino, ver el mapa, olvidar u ocultar. Opciones e idioma (`/mercader idioma es|en|auto`).
 - Aviso en el chat al abrir un vendedor con stock limitado. Botón de minimapa de la familia, compartimento de addons, atajo de teclado, errores propios guardados (`/mercader errores`).
-- 82 tests en Lua 5.1.
+- 83 tests en Lua 5.1.

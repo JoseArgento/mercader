@@ -12,7 +12,10 @@ local Map = {}
 ns.Map = Map
 
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
-local PIN_SIZE, NOTE_SIZE, DOT_SIZE = 24, 26, 15
+-- A mark's size on screen: on a zone's map, and smaller on a continent's, where a whole zone is a thumb wide.
+-- Both shrink a little more when the map is the small windowed one (see Map.PinSize).
+local PIN_SIZE, PIN_SIZE_CONTINENT, NOTE_SIZE, DOT_RATIO = 20, 14, 22, 0.62
+local SMALL_MAP, FULL_MAP, SMALLEST = 600, 1100, 0.8 -- the map's width on screen, and how far a mark shrinks
 -- vendors closer than this (in map units, 0..1) share one mark: a town's shops are a few steps apart
 local CLUSTER = 0.02
 local TIP_VENDORS, TIP_ITEMS = 4, 6
@@ -146,17 +149,34 @@ function Map.PinLevel(map)
 	return PIN_LEVEL_FALLBACK
 end
 
+-- How big a mark is drawn: `continent` for a continent's map, `width` = how wide the map is on screen.
+function Map.PinSize(continent, width)
+	local base = continent and PIN_SIZE_CONTINENT or PIN_SIZE
+	local t = ((width or FULL_MAP) - SMALL_MAP) / (FULL_MAP - SMALL_MAP)
+	t = math.max(0, math.min(1, t))
+	return math.floor(base * (SMALLEST + (1 - SMALLEST) * t) + 0.5)
+end
+
+function Map.IsContinent(shown)
+	local info = shown and C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(shown)
+	local continent = Enum and Enum.UIMapType and Enum.UIMapType.Continent or CONTINENT
+	return info ~= nil and info.mapType == continent
+end
+
 -- The number of vendors a mark stands for, on a small ink disc at its corner.
 local function addCount(frame)
 	frame.dot = frame:CreateTexture(nil, "OVERLAY", nil, 1)
-	frame.dot:SetSize(DOT_SIZE, DOT_SIZE)
 	frame.dot:SetPoint("CENTER", frame, "BOTTOMRIGHT", -3, 3)
 	frame.dot:SetTexture(MEDIA .. "dot")
 	frame.count = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	frame.count:SetPoint("CENTER", frame.dot, "CENTER", 0, 0)
 	frame.count:SetTextColor(1, 0.93, 0.67)
-	function frame:SetCount(n, always)
-		local shown = always or n > 1
+	-- size = the mark's. On a continent's map the marks are too small for a number: plain = true leaves it out
+	-- (the tooltip still names every vendor of the mark).
+	function frame:SetCount(n, always, size, plain)
+		local dot = math.max(11, math.floor((size or PIN_SIZE) * DOT_RATIO + 0.5))
+		local shown = (always or n > 1) and not plain
+		self.dot:SetSize(dot, dot)
 		self.dot:SetShown(shown)
 		self.count:SetText(shown and tostring(n) or "")
 	end
@@ -220,7 +240,7 @@ end
 
 -- A gold ring that pulses around one mark for a few seconds: "Open map" in the book points at the vendor with
 -- it. One ring for the whole map, moved to whichever mark (or the corner note) holds the vendor.
-local GLOW_SIZE, GLOW_SECONDS = 58, 8
+local GLOW_RATIO, GLOW_SECONDS = 2.4, 8
 local function glowOn(frame)
 	local g = Map.glow
 	if not g then
@@ -239,7 +259,8 @@ local function glowOn(frame)
 	g:SetParent(frame) -- so it takes the mark's own scale and goes away with it
 	g:ClearAllPoints()
 	g:SetPoint("CENTER", frame, "CENTER", 0, 0)
-	g:SetSize(GLOW_SIZE, GLOW_SIZE)
+	local size = (frame:GetWidth() or PIN_SIZE) * GLOW_RATIO
+	g:SetSize(size, size)
 	g.on = frame
 	g:Show()
 	g.pulse:Play()
@@ -295,6 +316,9 @@ function Map.Draw()
 	local w, h = canvas:GetWidth() or 0, canvas:GetHeight() or 0
 	local level = Map.PinLevel(map)
 	Map.level = level
+	local continent = Map.IsContinent(map:GetMapID())
+	local size = Map.PinSize(continent, w * canvasScale)
+	Map.size = size
 	local lit
 	for i, mark in ipairs(layout.marks) do
 		local pin = Map.pins[i]
@@ -304,11 +328,12 @@ function Map.Draw()
 		end
 		pin.mark = mark
 		pin:SetFrameLevel(level)
+		pin:SetSize(size, size)
 		pin:SetScale(scale)
 		pin:ClearAllPoints()
 		pin:SetPoint("CENTER", canvas, "TOPLEFT", mark.x * w / scale, -mark.y * h / scale)
 		pin.art:SetTexture(MEDIA .. (mark.rumour and "pin_rumour" or "pin"))
-		pin:SetCount(#mark.entries)
+		pin:SetCount(#mark.entries, false, size, continent)
 		pin:Show()
 		if Map.highlight and holds(mark.entries, Map.highlight) then
 			lit = pin
@@ -323,7 +348,7 @@ function Map.Draw()
 		end
 		Map.note.entries = layout.notes
 		Map.note:SetFrameLevel(level + 5)
-		Map.note:SetCount(#layout.notes, true)
+		Map.note:SetCount(#layout.notes, true, NOTE_SIZE)
 		Map.note:Show()
 		if Map.highlight and holds(layout.notes, Map.highlight) then
 			lit = Map.note

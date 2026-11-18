@@ -54,9 +54,9 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 82 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
-- **Seen in the client** (Forever 1.60.1, 18 Nov 2026): the book, learning a vendor with its limited stock, sold-out items and prices, the visited vendor on the minimap, and "Mark the way".
-- **Not seen in the client yet:** the marks on the world map (the first builds drew them under the game's explored-areas layer; they now sit at the game's points-of-interest level), the minimap marks' exact place, and the rumours' approximate positions.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 83 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- **Seen in the client** (Forever 1.60.1, 18 Nov 2026): the book, learning a vendor with its limited stock, sold-out items and prices, the chat line, the marks on the zone and continent maps and on the minimap, and "Mark the way".
+- **Not seen in the client yet:** the ring of "Open map", the book's page with no vendor chosen, and each rumour's approximate position.
 
 If something fails, `/mercader errores` shows the addon's last error to copy into a GitHub issue.
 

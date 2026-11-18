@@ -455,6 +455,25 @@ def test_the_marks_sit_above_the_games_explored_areas(game):
     assert level(game.ns.Map.pins[1]) == 2100
 
 
+def test_mark_sizes(game):
+    size = game.ns.Map.PinSize
+    # a zone's map: 20 px on the big map, a little smaller on the small windowed one
+    assert size(False, 1500) == 20 and size(False, 1100) == 20 and size(False, 690) == 17 and size(False, 400) == 16
+    # a continent's map: smaller, so a zone's marks do not cover the zone
+    assert size(True, 1500) == 14 and size(True, 690) == 12
+    game.open(LIZZARIK)
+    game.run("WorldMapFrame:Show()")
+    pin = game.ns.Map.pins[1]
+    assert game.ns.Map.size == 16 and game.run("return ns.Map.pins[1]:GetWidth()") == 16  # the map is 500 px wide here
+    assert pin.count["_text"] == "2" and pin.dot["_shown"]
+    # the continent: smaller marks, and no number on them
+    game.m.shownMap = 1414
+    game.run("WorldMapFrame:OnMapChanged()")
+    pin = game.ns.Map.pins[1]
+    assert game.ns.Map.size == 11 and game.run("return ns.Map.pins[1]:GetWidth()") == 11
+    assert pin.count["_text"] == "" and not pin.dot["_shown"] and len(lua_list(pin.mark.entries)) == 3
+
+
 def test_the_map_report(game):
     game.slash("marcas")
     lines = game.chat()[-3:]
