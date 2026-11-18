@@ -9,6 +9,10 @@ Funciona de dos maneras a la vez:
 
 [Read in English](README.en.md)
 
+![Mercader en el mapa de Ironforge: la marca de un vendedor visitado, con lo que vende y cuánto quedaba](docs/mapa.jpg)
+
+![El libro de Mercader: la lista de vendedores y rumores, con búsqueda, zonas y tipos](docs/libro.png)
+
 **Contenido**
 
 - [Cómo se usa](#cómo-se-usa)

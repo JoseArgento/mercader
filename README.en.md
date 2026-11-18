@@ -9,6 +9,10 @@ It works two ways at once:
 
 [Leer en castellano](README.md)
 
+![Mercader on the Ironforge map: the mark of a visited vendor, with what it sells and how many were left](docs/mapa.jpg)
+
+![Mercader's book: the list of vendors and rumours, with search, zones and kinds](docs/libro.png)
+
 ## How to use it
 
 **On the world map** (M): every mark is a little pouch: on gold it is a vendor you visited, on pale parchment it is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Almost every rumour has its mark (61 of 64); the three nobody placed are gathered in a small note at the bottom-left corner of their zone's map. On the continents' maps the marks are off by default, so they do not cover the map; Options turns them on.
