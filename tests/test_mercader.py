@@ -139,7 +139,8 @@ def test_the_list_of_rumours_is_well_formed(game):
         assert (s.x is None) == (s.y is None), s.name
         if s.x is not None:
             assert 0 < s.x < 1 and 0 < s.y < 1, s.name
-            assert s.place, s.name  # an approximate position always says of which town
+        else:
+            assert s.place, s.name  # without a position, at least the place the wiki names
 
 
 # The item ids looked up one by one on foreverdb.net on 18 Nov 2026 (name and who sells it). An id that is not
@@ -158,7 +159,8 @@ def test_every_item_of_the_list_was_looked_up(game):
         listed.update(lua_list(s["items"]))
     assert listed == CHECKED_ITEMS
     assert len(lua_list(game.ns.Seed)) == 64
-    assert sum(1 for s in lua_list(game.ns.Seed) if s.x is not None) == 31
+    assert sum(1 for s in lua_list(game.ns.Seed) if s.x is not None) == 61
+    assert sum(1 for s in lua_list(game.ns.Seed) if s.road) == 3
     assert sum(1 for s in lua_list(game.ns.Seed) if s.classic) == 10
 
 
@@ -166,10 +168,14 @@ def test_a_rumour_is_listed_until_the_player_visits(game):
     keys = game.keys()
     assert "Lizzarik@1413" in keys
     e = game.entry("Lizzarik@1413")
-    assert not e.learned and e.x is None and e.road == "The Crossroads - Ratchet"
+    assert not e.learned and e.approx and e.road == "The Crossroads - Ratchet"
     assert all(it.rumour for it in lua_list(e["items"]))
     assert game.run("return ns.Vendors.Where(ns.Vendors.Find('Lizzarik@1413'))") == "walks the road The Crossroads - Ratchet"
     assert game.run("return ns.Vendors.Where(ns.Vendors.Find('Grazlix@1413'))") == "around Ratchet (approximate)"
+    game.ns.db.settings.otherSide = True
+    where = "return ns.Vendors.Where(ns.Vendors.Find('%s'))"
+    assert game.run(where % "Kixxle@1437") == "approximate position"  # a spot with no name of its own
+    assert game.run(where % "Abigail Sawyer@1458") == "at War Quarter"  # a place, but no position
 
 
 def test_rumours_of_the_other_faction_are_left_out(game):
@@ -365,13 +371,22 @@ def marks(game, shown):
 
 def test_marks_of_a_zone(game):
     got, notes = marks(game, 1413)
-    # Ratchet's two rumours share one mark; the rumours without a position are the note
-    assert got == [(0.62, 0.37, ["Grazlix@1413", "Vexspindle@1413"], True)]
-    assert notes == ["Kiknikle@1413", "Lizzarik@1413", "Pizznukle@1413"]
+    # the rumours that stand together share one mark; the one that walks a road has its own
+    assert got == [
+        (0.62, 0.37, ["Grazlix@1413", "Vexspindle@1413"], True),
+        (0.42, 0.38, ["Kiknikle@1413", "Pizznukle@1413"], True),
+        (0.57, 0.34, ["Lizzarik@1413"], True),
+    ]
+    assert notes == []
     game.open(LIZZARIK)
     got, notes = marks(game, 1413)
-    assert (0.57, 0.34, ["n3658"], False) in got
-    assert "Lizzarik@1413" not in notes
+    assert (0.57, 0.34, ["n3658"], False) in got and len(got) == 3
+
+
+def test_a_rumour_without_a_position_goes_to_the_note(game):
+    got, notes = marks(game, 1437)
+    assert notes == ["Dark Iron Entrepreneur@1437"]
+    assert (0.1, 0.58, ["Brak Durnad@1437", "Jennabink Powerseam@1437"], True) in got
 
 
 def test_marks_on_the_continent(game):
@@ -379,7 +394,10 @@ def test_marks_on_the_continent(game):
     got, notes = marks(game, 1414)
     # the Barrens are drawn at 0.4-0.6 x 0.3-0.6 of Kalimdor: Ratchet (0.62, 0.37) falls on 0.524, 0.411, and
     # Lizzarik, a few steps away at that size, shares its mark, which is no longer only a rumour
-    assert got == [(0.524, 0.411, ["Grazlix@1413", "Vexspindle@1413", "n3658"], False)]
+    assert got == [
+        (0.524, 0.411, ["Grazlix@1413", "Vexspindle@1413", "n3658"], False),
+        (0.484, 0.414, ["Kiknikle@1413", "Pizznukle@1413"], True),
+    ]
     assert notes == []  # the note is for the zone's own map
     assert marks(game, 1415) == ([], [])  # no rectangle known for those zones: nothing is guessed
 
@@ -395,11 +413,13 @@ def test_no_marks_when_turned_off(game):
 def test_the_marks_are_drawn_on_the_canvas(game):
     game.open(LIZZARIK)
     game.run("WorldMapFrame:Show()")
-    pins = lua_list(game.ns.Map.pins)
-    shown = [p for p in pins if p["_shown"]]
-    assert len(shown) == 2
-    by_count = {p.count["_text"]: p for p in shown}
-    two, one = by_count["2"], by_count[""]
+
+    def shown():
+        return [p for p in lua_list(game.ns.Map.pins) if p["_shown"]]
+
+    assert sorted(p.count["_text"] for p in shown()) == ["", "2", "2"]
+    one = next(p for p in shown() if p.count["_text"] == "")
+    two = next(p for p in shown() if p.count["_text"] == "2")
     # canvas 1000 x 600 zoomed to 0.5: the mark undoes the zoom (scale 2) and its offset is in its own scale
     calls = [c for c in lua_list(one["_calls"]) if c[1] == "SetScale"]
     assert calls and calls[-1][2] == 2
@@ -407,11 +427,42 @@ def test_the_marks_are_drawn_on_the_canvas(game):
     assert anchor[1] == "CENTER" and anchor[3] == "TOPLEFT"
     assert (anchor[4], anchor[5]) == pytest.approx((0.57 * 1000 / 2, -0.34 * 600 / 2))
     assert two.art.texture.endswith("pin_rumour") and one.art.texture.endswith("pin")
-    assert game.ns.Map.note.count["_text"] == "2"
-    # another zone: the marks of this one go away
-    game.m.shownMap = 1429
+    assert game.ns.Map.note is None  # every rumour of the Barrens has a position
+    # the Wetlands: one rumour has no position, and the note at the corner counts it
+    game.m.shownMap = 1437
     game.run("WorldMapFrame:OnMapChanged()")
-    assert not any(p["_shown"] for p in lua_list(game.ns.Map.pins))
+    assert len(shown()) == 3 and game.ns.Map.note["_shown"] and game.ns.Map.note.count["_text"] == "1"
+    # a zone with nothing: the marks and the note go away
+    game.m.shownMap = 1411
+    game.run("WorldMapFrame:OnMapChanged()")
+    assert shown() == [] and not game.ns.Map.note["_shown"]
+
+
+def test_the_map_report(game):
+    game.slash("marcas")
+    lines = game.chat()[-3:]
+    assert "Map hooked: yes. Marks turned on: yes." in lines[0]
+    assert "The Barrens (1413): 3 marks for 5 vendors, 0 rumours without a position." in lines[1]
+    assert "The map is closed" in lines[2]
+    game.run("WorldMapFrame:Show()")
+    game.slash("marks")
+    assert "Map open: 3 marks drawn, canvas 1000 x 600, zoom 0.50." in game.chat()[-1]
+    game.goto(None)
+    game.run("WorldMapFrame:Hide()")
+    game.slash("marcas")
+    assert "names no zone here" in game.chat()[-1]
+
+
+def test_the_map_is_hooked_later_when_the_game_makes_it_late():
+    game = Client()
+    game.run("MOCK.keptMap = WorldMapFrame; WorldMapFrame = nil")
+    game.login()
+    assert not game.ns.Map.hooked and len(lua_list(game.m.timers)) == 1
+    game.run("WorldMapFrame = MOCK.keptMap")
+    game.m.runTimers()
+    assert game.ns.Map.hooked is True
+    game.run("WorldMapFrame:Show()")
+    assert any(p["_shown"] for p in lua_list(game.ns.Map.pins))
 
 
 def test_tooltip_lines(game):
@@ -461,8 +512,9 @@ def test_the_chosen_vendor(game):
     d = game.ns.UI.Detail()
     assert d.where == "The Barrens · around Ratchet (approximate)" and d.forget == "Hide" and d.canMark
     assert "other players saw this stock in Forever" in d.status
-    game.ns.UI.Open("Kiknikle@1413")
-    assert not game.ns.UI.Detail().canMark
+    game.ns.UI.Open("Dark Iron Entrepreneur@1437")
+    d = game.ns.UI.Detail()
+    assert not d.canMark and d.where == "Zone 1437 · at Thandol Span"
 
 
 def test_the_book_goes_over_the_open_map(game):
@@ -480,7 +532,67 @@ def test_the_book_goes_over_the_open_map(game):
 def test_a_rumour_nobody_confirmed_says_so(game):
     game.ns.UI.Open("Charys Yserian@1453")
     assert "nobody confirmed it in Forever" in game.ns.UI.Detail().status
-    assert game.ns.UI.scope == "all"  # she is not in the player's zone
+    # she is not in the player's zone: the list turns to hers
+    assert game.ns.UI.scope == "pick" and game.ns.UI.zone == 1453
+    assert [r.name for r in rows(game)] == ["Charys Yserian", "Frederick Stover"]
+
+
+def test_pick_a_zone_from_the_menu(game):
+    game.slash("")
+    f = game.ns.UI.frame
+    f.scopePick["_scripts"].OnClick(f.scopePick)
+    items = lua_list(game.m.lastMenu["items"])
+    titles = [i.text for i in items if i.kind == "title"]
+    assert titles == ["Eastern Kingdoms", "Kalimdor"]  # zones the stand-in knows no continent for come first
+    radios = [i.text for i in items if i.kind == "radio"]
+    assert "The Barrens (5)" in radios and "Stormwind City (2)" in radios and "Westfall (1)" in radios
+    assert radios.index("Elwynn Forest (1)") < radios.index("Hillsbrad Foothills (3)") < radios.index("The Barrens (5)")
+    game.m.clickMenu("Hillsbrad Foothills (3)")
+    assert game.ns.UI.scope == "pick" and game.ns.UI.zone == 1424
+    assert [r.name for r in rows(game)] == ["Kris Legace", "Robert Aebischer", "Zixil"]
+    assert f.scopePick["_text"] == "Hillsbrad Foothills" and f.scopePick.pressed and not f.scopeZone.pressed
+    # the picked zone stays when the book is closed and opened again; "this zone" goes back to the player's
+    game.slash("")
+    game.slash("")
+    assert game.ns.UI.scope == "pick"
+    f.scopeZone["_scripts"].OnClick(f.scopeZone)
+    assert [r.zone for r in rows(game)] == ["The Barrens"] * 5 and f.scopePick["_text"] == "Zone..."
+
+
+def test_search_by_zone_name(game):
+    game.slash("buscar hillsbrad")
+    assert [r.name for r in rows(game)] == ["Kris Legace", "Robert Aebischer", "Zixil"]
+    assert game.ns.UI.frame.scopeAll.pressed
+
+
+def test_this_zone_inside_a_dungeon_is_everywhere():
+    game = Client(where=(None, None, None)).login()
+    game.slash("")
+    f = game.ns.UI.frame
+    assert len(rows(game)) > 30 and f.scopeAll.pressed and not f.scopeZone.pressed
+    f.scopeZone["_scripts"].OnClick(f.scopeZone)
+    assert len(rows(game)) > 30 and f.scopeAll.pressed  # the client names no zone: nothing to narrow to
+
+
+def test_bring_hidden_rumours_back_with_a_click(game):
+    game.slash("")
+    f = game.ns.UI.frame
+    assert not f.hiddenChip["_shown"] and f.unhide["_text"] == "Show the hidden rumours (0)"
+    game.ns.UI.Open("Grazlix@1413")
+    game.ns.UI.Forget()
+    game.ns.UI.Open("Vexspindle@1413")
+    game.ns.UI.Forget()
+    assert "The chip under the list" in game.chat()[-1]
+    assert f.hiddenChip["_shown"] and f.hiddenChip["_text"] == "2 hidden · show"
+    assert f.unhide["_text"] == "Show the hidden rumours (2)"
+    assert "Grazlix" not in [r.name for r in rows(game)]
+    f.hiddenChip["_scripts"].OnClick(f.hiddenChip)
+    assert "2 hidden rumours are back" in game.chat()[-1]
+    assert not f.hiddenChip["_shown"] and "Grazlix" in [r.name for r in rows(game)]
+    game.ns.UI.Open("Grazlix@1413")
+    game.ns.UI.Forget()
+    f.unhide["_scripts"].OnClick(f.unhide)
+    assert game.ns.Vendors.HiddenCount() == 0
 
 
 def test_a_found_vendor_with_nothing_in_stock(game):

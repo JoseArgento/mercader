@@ -238,11 +238,20 @@ function Map.Draw()
 	end
 end
 
--- Hook the map once: when it opens, when it turns to another zone and when its zoom changes.
+-- Hook the map once: when it opens, when it turns to another zone and when its zoom changes. Returns whether
+-- the map is hooked; when the game has not made its map yet, it is tried again a few times.
+local RETRY_EVERY, RETRIES = 3, 10
 function Map.Init()
 	local map = WorldMapFrame
-	if Map.hooked or not (map and map.GetCanvas) then
-		return
+	if Map.hooked then
+		return true
+	end
+	if not (map and map.GetCanvas) then
+		Map.tries = (Map.tries or 0) + 1
+		if Map.tries <= RETRIES then
+			C_Timer.After(RETRY_EVERY, Map.Init)
+		end
+		return false
 	end
 	Map.hooked = true
 	local draw = guarded(Map.Draw, "map")
@@ -256,6 +265,52 @@ function Map.Init()
 			end)
 		end
 	end
+	if map:IsShown() then
+		draw()
+	end
+	return true
+end
+
+-- What the map is doing with the marks, in lines for the chat (/mercader marcas): when a player says "I see
+-- nothing on the map", this tells whether there was nothing to draw or something did not get drawn.
+function Map.Report()
+	local map = WorldMapFrame
+	local lines = {}
+	lines[#lines + 1] = L.MARKS_HOOK:format(Map.hooked and L.YES or L.NO, ns.db.settings.pins and L.YES or L.NO)
+	local shown = map and map.GetMapID and map:GetMapID() or nil
+	local open = map and map:IsShown() or false
+	if not open then
+		-- with the map closed, tell about the zone the player is in
+		shown = ns.PlayerMap()
+	end
+	if not shown then
+		lines[#lines + 1] = L.MARKS_NO_MAP
+		return lines
+	end
+	local layout = Map.Layout(shown)
+	local vendors = 0
+	for _, mark in ipairs(layout.marks) do
+		vendors = vendors + #mark.entries
+	end
+	lines[#lines + 1] = L.MARKS_ZONE:format(ns.ZoneName(shown), shown, #layout.marks, vendors, #layout.notes)
+	if open then
+		local canvas = map:GetCanvas()
+		local drawn = 0
+		for _, pin in ipairs(Map.pins) do
+			if pin:IsShown() then
+				drawn = drawn + 1
+			end
+		end
+		lines[#lines + 1] = L.MARKS_CANVAS:format(
+			drawn,
+			canvas:GetWidth() or 0,
+			canvas:GetHeight() or 0,
+			map.GetCanvasScale and map:GetCanvasScale() or 0
+		)
+	else
+		lines[#lines + 1] = L.MARKS_CLOSED
+	end
+	return lines
 end
 
 ns.On("vendors", function()

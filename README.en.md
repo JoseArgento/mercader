@@ -11,17 +11,17 @@ It works two ways at once:
 
 ## How to use it
 
-**On the world map** (M): a gold coin is a vendor you visited; a pale ring is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Rumours of the zone without a known position (road walkers, or vendors nobody placed yet) are gathered in a small note at the map's bottom-left corner. The continent map shows the marks of its zones.
+**On the world map** (M): a gold coin is a vendor you visited; a pale ring is a rumour. Vendors standing together (a town's shops) share one mark with a number. Hover to see who it is, where, and what they sell with how many were left. Click: open it in the book. Right click: mark the way with the game's own arrow. Almost every rumour has its mark (61 of 64); the three nobody placed are gathered in a small note at the bottom-left corner of their zone's map. The continent map shows the marks of its zones.
 
 **The book** opens with `/mercader`, the minimap button (right click: this zone's vendors, in chat), a key binding or the addon compartment.
 
-- Left page: search by **vendor or item** ("who sells Agile Boots?"), the kinds of goods (Gear, Potions, Recipes, Bags, Other), "This zone / Everywhere" and the list.
+- Left page: search by **vendor, item or zone** ("who sells Agile Boots?", "hillsbrad"), where to look (**This zone**, **Everywhere** or **Zone...**, a menu of the zones that have something, by continent), the kinds of goods (Gear, Potions, Recipes, Bags, Other) and the list. If you hid rumours, a button under the list brings them back.
 - Right page, the chosen vendor: where it is, what it sells and how many were left last time (hover an item for its tooltip; Shift-click links it in chat), and the buttons **Mark the way**, **Open map** and **Forget** (or **Hide**, for a rumour).
 - The Options tab: map marks, rumours, the other faction's vendors, the chat line, the minimap button and the language.
 
 **In chat**, when you open a vendor with limited stock: "Mercader: Lizzarik has limited stock: [Heavy Spiked Mace] x2, [Lesser Healing Potion] x3". It can be turned off in Options.
 
-Commands: `/mercader buscar NAME` (or `search`), `/mercader mapa on|off`, `/mercader rumores` (bring hidden rumours back), `/mercader zonas` (the list's zones as your client names them), `/mercader minimapa on|off` (`juntar on|off`: one button for the whole addon family), `/mercader idioma es|en|auto`, `/mercader errores`.
+Commands: `/mercader buscar NAME` (or `search`), `/mercader mapa on|off`, `/mercader rumores` (bring hidden rumours back), `/mercader zonas` (the list's zones as your client names them), `/mercader marcas` (what the map is drawing), `/mercader minimapa on|off` (`juntar on|off`: one button for the whole addon family), `/mercader idioma es|en|auto`, `/mercader errores`.
 
 ## What it writes down
 
@@ -40,7 +40,7 @@ Limited stock is what the game itself reports in the vendor window. A limited it
 It was put together by hand, item by item, on 18 Nov 2026. It does not copy any other addon's database.
 
 - **Who sells what**: the public item pages of [foreverdb.net](https://foreverdb.net), one look-up for each of the list's 59 items. That site tells apart what a player already saw in Forever from what is still Classic data, and Mercader says the same.
-- **Where**: the town the vendor is known to stand in, from Classic, with the **town's** position to the nearest map point. That is why the game says "around Ratchet (approximate)". Of 64 rumours, 31 have an approximate position and 33 only their zone (or the road they walk).
+- **Where**: the town or spot each vendor's page on [warcraft.wiki.gg](https://warcraft.wiki.gg) names, one look-up per vendor, with the **town's** position to the nearest map point (in cities, the district's). That is why the game says "around Ratchet (approximate)". Of 64 rumours, 61 have an approximate position (3 of them walk a road, and their mark is on it) and 3 only a place.
 
 Mercader takes none of this as true: it is a starting point, and what you see replaces it.
 
@@ -50,7 +50,7 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 62 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 69 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
 - **Not seen in the client yet:** the marks on Forever's map (size, level, zoom), limited stock as `C_MerchantFrame.GetItemInfo` reports it, `C_Map.SetUserWaypoint`, and the rumours' approximate positions.
 
 If something fails, `/mercader errores` shows the addon's last error to copy into a GitHub issue.

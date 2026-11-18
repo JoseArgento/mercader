@@ -98,6 +98,23 @@ function ns.ZoneName(map)
 	return info and info.name or L.UNKNOWN_ZONE:format(map or 0)
 end
 
+-- The name of the continent a zone is on ("" when the client does not say).
+function ns.ContinentName(map)
+	local continent = Enum and Enum.UIMapType and Enum.UIMapType.Continent or 2
+	local guard = 0
+	while map and guard < 6 do
+		local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(map)
+		if not info then
+			return ""
+		end
+		if info.mapType == continent then
+			return info.name or ""
+		end
+		map, guard = info.parentMapID, guard + 1
+	end
+	return ""
+end
+
 function ns.PlayerMap()
 	return C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player") or nil
 end

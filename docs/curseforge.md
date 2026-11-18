@@ -14,12 +14,12 @@
 **Features**
 
 - Marks on the world map (zone and continent). Vendors that stand together share one mark with a number. Hover for the stock, click to open the book, right click to mark the way.
-- A parchment book (`/mercader`): search by vendor or item ("who sells Agile Boots?"), filter by kind, this zone or everywhere, item tooltips, Shift-click to link.
+- A parchment book (`/mercader`): search by vendor, item or zone ("who sells Agile Boots?"), pick a zone from a menu, filter by kind, item tooltips, Shift-click to link.
 - A chat line when you open a vendor that has limited stock (can be turned off).
 - "Sold out" memory: a limited item that is gone stays written down, so you know to come back.
 - English and Spanish. Minimap button, addon compartment, key binding.
 
-**Honest about its data.** The list of rumours was put together by hand from public sources (foreverdb.net item pages) and is only a starting point; positions of rumours are approximate until you visit. No data is copied from other addons.
+**Honest about its data.** The list of rumours was put together by hand from public sources (foreverdb.net item pages and warcraft.wiki.gg vendor pages) and is only a starting point; positions of rumours are approximate until you visit. No data is copied from other addons.
 
 Source code, tests and issues: https://github.com/JoseArgento/mercader
 
@@ -36,12 +36,12 @@ If it helped and you want to support the time it takes to maintain it: https://w
 **Qué trae**
 
 - Marcas en el mapa del mundo (zona y continente). Los vendedores que están juntos comparten una marca con un número. Pasando el mouse ves el stock; clic abre el libro; clic derecho marca el camino.
-- Un libro de pergamino (`/mercader`): buscar por vendedor u objeto ("¿quién vende Agile Boots?"), filtrar por tipo, esta zona o todo, tooltips de objetos, Shift-clic para linkear.
+- Un libro de pergamino (`/mercader`): buscar por vendedor, objeto o zona ("¿quién vende Agile Boots?"), elegir una zona de un menú, filtrar por tipo, tooltips de objetos, Shift-clic para linkear.
 - Un aviso en el chat cuando abrís un vendedor con stock limitado (se puede apagar).
 - Memoria de "agotado": un objeto limitado que ya no está queda anotado, para que sepas que hay que volver.
 - Castellano e inglés. Botón de minimapa, compartimento de addons, atajo de teclado.
 
-**Honesto con sus datos.** La lista de rumores está armada a mano con fuentes públicas (las páginas de objetos de foreverdb.net) y es solo un punto de partida; las posiciones de los rumores son aproximadas hasta que los visites. No copia datos de otros addons.
+**Honesto con sus datos.** La lista de rumores está armada a mano con fuentes públicas (las páginas de objetos de foreverdb.net y las de vendedores de warcraft.wiki.gg) y es solo un punto de partida; las posiciones de los rumores son aproximadas hasta que los visites. No copia datos de otros addons.
 
 Código, tests e issues: https://github.com/JoseArgento/mercader
 

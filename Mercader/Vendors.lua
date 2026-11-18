@@ -207,6 +207,10 @@ local function matches(entry, text)
 	if entry.name:lower():find(text, 1, true) then
 		return true
 	end
+	-- the zone's name too: most players know where they are going, not what the vendor is called
+	if ns.ZoneName(entry.map):lower():find(text, 1, true) then
+		return true
+	end
 	for _, it in ipairs(entry.items) do
 		local name = ns.ItemName(it.id)
 		if name and name:lower():find(text, 1, true) then
@@ -257,6 +261,39 @@ function V.List(opts)
 		return a.key < b.key
 	end)
 	return out
+end
+
+-- The zones that have something to show with the current kinds, faction and rumours (the search is not
+-- applied): { { map, name, continent, count } }, by continent and name. For the book's zone menu.
+function V.Zones()
+	local byMap, out = {}, {}
+	for _, entry in ipairs(V.List()) do
+		local z = byMap[entry.map]
+		if not z then
+			z = { map = entry.map, name = ns.ZoneName(entry.map), continent = ns.ContinentName(entry.map), count = 0 }
+			byMap[entry.map] = z
+			out[#out + 1] = z
+		end
+		z.count = z.count + 1
+	end
+	table.sort(out, function(a, b)
+		if a.continent ~= b.continent then
+			return a.continent < b.continent
+		end
+		if a.name ~= b.name then
+			return a.name < b.name
+		end
+		return a.map < b.map
+	end)
+	return out
+end
+
+function V.HiddenCount()
+	local n = 0
+	for _ in pairs(ns.db.hidden) do
+		n = n + 1
+	end
+	return n
 end
 
 function V.Find(key)
