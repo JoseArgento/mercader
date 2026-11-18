@@ -27,13 +27,15 @@ Commands: `/mercader buscar NAME` (or `search`), `/mercader mapa on|off`, `/merc
 
 ## What it writes down
 
-| Kind | What goes in |
+Only what a vendor has in **limited stock**: what is always there is not a find. The kinds are there to filter:
+
+| Kind | What goes in (always in limited stock) |
 |---|---|
-| Gear | Weapons and armour **in limited stock** |
-| Potions | Potions, elixirs and flasks, limited or not |
-| Recipes | Recipes **in limited stock** |
-| Bags | Bags and quivers, limited or not |
-| Other | Anything else in limited stock |
+| Gear | Weapons and armour |
+| Potions | Potions, elixirs and flasks |
+| Recipes | Recipes |
+| Bags | Bags and quivers |
+| Other | Anything else |
 
 Limited stock is what the game itself reports in the vendor window. A limited item that is no longer in the window stays written down as **sold out**; a vendor of bread and water is not written down. Data is saved per account (`MercaderDB`).
 
@@ -52,7 +54,7 @@ Copy the `Mercader` folder to `Interface\AddOns\` inside the game's Forever fold
 
 ## How it was tested
 
-- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 75 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
+- Every game function it uses exists in Forever 1.60.1 (`tools/check_api.py`); forever-lint: no errors; Addon Sentry: no risk signals; 77 tests in Lua 5.1 on a stand-in client; the 59 item ids checked one by one.
 - **Not seen in the client yet:** the marks on Forever's map (size, level, zoom) and on the minimap, limited stock as `C_MerchantFrame.GetItemInfo` reports it, `C_Map.SetUserWaypoint`, and the rumours' approximate positions.
 
 If something fails, `/mercader errores` shows the addon's last error to copy into a GitHub issue.

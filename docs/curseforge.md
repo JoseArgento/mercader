@@ -5,7 +5,7 @@
 
 ## English
 
-**Mercader** puts the vendors worth the trip on your world map: limited-stock gear, potions, limited-stock recipes, bags and other limited goods. Made for WoW Forever.
+**Mercader** puts the vendors worth the trip on your world map: the ones that have something in limited stock, be it gear, potions, recipes, bags or other goods. Made for WoW Forever.
 
 **It learns by itself.** Every time you open a vendor's window, Mercader writes down what is worth it, how many were left, the price and where you were standing. Next time that vendor is on your map at the exact spot, shared by all your characters.
 
@@ -27,7 +27,7 @@ If it helped and you want to support the time it takes to maintain it: https://w
 
 ## Castellano
 
-**Mercader** marca en el mapa del mundo los vendedores que valen el viaje: equipo de stock limitado, pociones, recetas de stock limitado, bolsas y otros objetos limitados. Hecho para WoW Forever.
+**Mercader** marca en el mapa del mundo los vendedores que valen el viaje: los que tienen algo de stock limitado, sea equipo, pociones, recetas, bolsas u otros objetos. Hecho para WoW Forever.
 
 **Aprende solo.** Cada vez que abrís la ventana de un vendedor, Mercader anota lo que vale la pena, cuánto quedaba, el precio y dónde estabas parado. La próxima vez ese vendedor está en tu mapa en el lugar exacto, para todos tus personajes.
 

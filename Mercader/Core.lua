@@ -32,7 +32,7 @@ function ns.InitDB()
 		MercaderDB = {}
 	end
 	local db = MercaderDB
-	db.version = 1
+	db.version = 2
 	db.settings = type(db.settings) == "table" and db.settings or {}
 	local s = db.settings
 	if s.lang ~= "es" and s.lang ~= "en" then
@@ -54,6 +54,22 @@ function ns.InitDB()
 	end
 	db.vendors = type(db.vendors) == "table" and db.vendors or {}
 	db.hidden = type(db.hidden) == "table" and db.hidden or {}
+	-- Only limited stock is written down. The first builds also kept potions and bags that are always in
+	-- stock: those go, and a vendor left with nothing (and that no rumour was about) goes with them.
+	for key, rec in pairs(db.vendors) do
+		if type(rec) ~= "table" or type(rec.items) ~= "table" then
+			db.vendors[key] = nil
+		else
+			for id, it in pairs(rec.items) do
+				if type(it) ~= "table" or not it.limited then
+					rec.items[id] = nil
+				end
+			end
+			if not next(rec.items) and not rec.seed then
+				db.vendors[key] = nil
+			end
+		end
+	end
 	ns.db = db
 	ns.ApplyLanguage(s.lang)
 	-- the addon's own errors, kept here and shown with /mercader errores (Pergamino.Guard)

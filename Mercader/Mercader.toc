@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Mercader
-## Notes: Vendors worth the trip, on your map: limited-stock gear, potions, recipes and bags. It learns every vendor you visit and starts with its own list of rumours.
-## Notes-esES: Vendedores que valen el viaje, en tu mapa: equipo de stock limitado, pociones, recetas y bolsas. Aprende cada vendedor que visitás y arranca con una lista propia de rumores.
-## Notes-esMX: Vendedores que valen el viaje, en tu mapa: equipo de stock limitado, pociones, recetas y bolsas. Aprende cada vendedor que visitas y arranca con una lista propia de rumores.
+## Notes: Vendors worth the trip, on your map: gear, potions, recipes and bags in limited stock. It learns every vendor you visit and starts with its own list of rumours.
+## Notes-esES: Vendedores que valen el viaje, en tu mapa: equipo, pociones, recetas y bolsas de stock limitado. Aprende cada vendedor que visitás y arranca con una lista propia de rumores.
+## Notes-esMX: Vendedores que valen el viaje, en tu mapa: equipo, pociones, recetas y bolsas de stock limitado. Aprende cada vendedor que visitas y arranca con una lista propia de rumores.
 ## Author: José Argento
 ## Version: @project-version@
 ## SavedVariables: MercaderDB

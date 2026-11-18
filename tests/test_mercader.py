@@ -197,12 +197,13 @@ def test_rumours_of_the_other_faction_are_left_out(game):
         (4817, False, None),  # a weapon always in stock is not a find
         (2488, False, None),
         (858, True, "potion"),
-        (858, False, "potion"),
+        (858, False, None),  # a potion that is always there is not a find either
         (4540, False, None),  # bread
         (4540, True, "other"),
         (5640, True, "recipe"),
         (5640, False, None),
-        (4496, False, "bag"),
+        (4496, False, None),
+        (4496, True, "bag"),
         (2320, True, "other"),
         (2320, False, None),
         (999999, False, None),  # an item the client does not know
@@ -255,11 +256,11 @@ def test_a_vendor_of_bread_is_not_written_down(game):
 def test_sold_out_and_gone(game):
     game.open("{ name = 'Jazzik', npc = 3498, items = { {4778, 1, 100}, {4496, -1, 500} } }")
     rec = game.ns.db.vendors["n3498"]
-    assert rec["items"][4778].stock == 1 and rec["items"][4496].stock == -1
+    assert rec["items"][4778].stock == 1
+    assert rec["items"][4496] is None  # the pouch is always in stock: not written down
     game.m.now = game.m.now + 3600
     game.open("{ name = 'Jazzik', npc = 3498, items = { {2488, -1, 500} } }")
     assert rec["items"][4778].stock == 0  # limited and not in the window: sold out, still written down
-    assert rec["items"][4496] is None  # it was always in stock and is not sold any more: gone
     assert game.run("return ns.Vendors.StockText({ stock = 0 })") == "sold out"
     assert game.run("return ns.Vendors.StockText({ stock = 2 })") == "2 left"
     assert game.run("return ns.Vendors.StockText({ stock = -1 })") == "always in stock"
@@ -768,6 +769,26 @@ def test_saved_variables_are_made_and_mended():
     assert s.minimapPins is True
     assert game.run("return type(ns.db.vendors)") == "table"
     assert "MercaderDB" in game.m.savedVariables("MercaderDB")
+
+
+def test_what_the_first_builds_kept_without_a_limit_goes():
+    saved = """MercaderDB = { vendors = {
+        n1 = { name = "General", map = 1413, x = 0.5, y = 0.5, t = 1, sides = {}, items = {
+            [4496] = { cat = "bag", stock = -1, limited = false, price = 500, t = 1 } } },
+        n2 = { name = "Jazzik", map = 1413, x = 0.6, y = 0.4, t = 1, sides = {}, items = {
+            [4496] = { cat = "bag", stock = -1, limited = false, price = 500, t = 1 },
+            [4778] = { cat = "gear", stock = 2, limited = true, price = 100, t = 1 } } },
+        n3658 = { name = "Lizzarik", map = 1413, x = 0.57, y = 0.34, t = 1, sides = {}, seed = "Lizzarik@1413", items = {
+            [858] = { cat = "potion", stock = -1, limited = false, price = 100, t = 1 } } },
+        broken = 7,
+    } }"""
+    game = Client(saved=saved).login()
+    v = game.ns.db.vendors
+    assert v["n1"] is None and v["broken"] is None  # nothing limited left: the vendor goes
+    assert v["n2"] is not None and v["n2"]["items"][4496] is None and v["n2"]["items"][4778].stock == 2
+    # a vendor a rumour was about stays found, even with nothing left written down
+    assert v["n3658"] is not None and v["n3658"]["items"][858] is None
+    assert game.ns.db.version == 2
 
 
 def test_spanish():

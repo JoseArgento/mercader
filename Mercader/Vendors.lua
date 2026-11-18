@@ -11,28 +11,32 @@ local CLASS_CONSUMABLE, CLASS_CONTAINER, CLASS_WEAPON, CLASS_ARMOR, CLASS_RECIPE
 -- consumable subclasses that are a potion, an elixir or a flask
 local POTION_SUB = { [1] = true, [2] = true, [3] = true }
 
--- Which kind of goods an item is for Mercader, or nil when it is not worth writing down.
---   gear    weapons and armour, only in limited stock (the greens a vendor has two of)
---   potion  potions, elixirs and flasks, whatever the stock
---   recipe  recipes in limited stock
---   bag     bags and quivers, whatever the stock
---   other   anything else in limited stock
+-- Which kind of goods an item is for Mercader, or nil when it is not worth writing down. Only what a vendor
+-- has in limited stock is worth it (the greens a vendor has two of): what is always there is not a find.
+--   gear    weapons and armour
+--   potion  potions, elixirs and flasks
+--   recipe  recipes
+--   bag     bags and quivers
+--   other   anything else
 function V.Classify(id, limited)
+	if not limited then
+		return nil
+	end
 	local classID, subClassID
 	if C_Item and C_Item.GetItemInfoInstant then
 		local _
 		_, _, _, _, _, classID, subClassID = C_Item.GetItemInfoInstant(id)
 	end
 	if classID == CLASS_WEAPON or classID == CLASS_ARMOR then
-		return limited and "gear" or nil
+		return "gear"
 	elseif classID == CLASS_CONSUMABLE and POTION_SUB[subClassID] then
 		return "potion"
 	elseif classID == CLASS_RECIPE then
-		return limited and "recipe" or nil
+		return "recipe"
 	elseif classID == CLASS_CONTAINER or classID == CLASS_QUIVER then
 		return "bag"
 	end
-	return limited and "other" or nil
+	return "other"
 end
 
 local seedByKey, seedByName

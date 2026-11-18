@@ -1,6 +1,6 @@
 # Mercader
 
-Para los que juegan **WoW Forever** y no quieren recorrer medio mundo para ver si un vendedor tiene *esa* espada verde de stock limitado. Mercader marca en tu mapa los **vendedores que valen el viaje**: equipo de stock limitado, pociones, recetas de stock limitado, bolsas y otros objetos limitados.
+Para los que juegan **WoW Forever** y no quieren recorrer medio mundo para ver si un vendedor tiene *esa* espada verde de stock limitado. Mercader marca en tu mapa los **vendedores que valen el viaje**: los que tienen algo de **stock limitado**, sea equipo, pociones, recetas, bolsas u otros objetos.
 
 Funciona de dos maneras a la vez:
 
@@ -43,13 +43,15 @@ Comandos:
 
 ## Qué anota
 
-| Tipo | Qué entra |
+Solo lo que el vendedor tiene en **stock limitado**: lo que siempre está no es un hallazgo. Los tipos sirven para filtrar:
+
+| Tipo | Qué entra (siempre de stock limitado) |
 |---|---|
-| Equipo | Armas y armaduras **de stock limitado** (las verdes de las que el vendedor tiene dos) |
-| Pociones | Pociones, elixires y frascos, con o sin límite |
-| Recetas | Recetas **de stock limitado** |
-| Bolsas | Bolsas y carcajes, con o sin límite |
-| Otros | Cualquier otro objeto de stock limitado |
+| Equipo | Armas y armaduras (las verdes de las que el vendedor tiene dos) |
+| Pociones | Pociones, elixires y frascos |
+| Recetas | Recetas |
+| Bolsas | Bolsas y carcajes |
+| Otros | Cualquier otro objeto |
 
 El stock limitado es el que informa el propio juego en la ventana del vendedor. Un objeto limitado que ya no está en la ventana queda anotado como **agotado** (para que sepas que ahí se vende); un vendedor que solo vende pan y agua no se anota.
 
@@ -74,7 +76,7 @@ Copiá la carpeta `Mercader` a `Interface\AddOns\`, dentro de la carpeta de Fore
 **Probado:**
 - ✅ Cada función del juego que usa existe en Forever 1.60.1: `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source).
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): sin errores. [Addon Sentry](https://github.com/JoseArgento/addon-sentry): "Sin señales de riesgo".
-- ✅ **75 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
+- ✅ **77 tests** en Lua 5.1 (el Lua de WoW) sobre un cliente simulado: qué se anota y qué no, stock que baja y se agota, rumores reemplazados por la visita, facciones, búsqueda por vendedor, objeto y zona, el menú de zonas, marcas agrupadas en la zona y en el continente, las del minimapa (distancia, zoom, minimapa que gira), el libro, el camino marcado, castellano e inglés.
 - ✅ Los 59 identificadores de objeto de la lista, uno por uno contra foreverdb.net (un test los fija).
 
 **Todavía sin ver en el cliente ⏳** (el addon es nuevo; nada de esto se probó dentro del juego):
