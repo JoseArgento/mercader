@@ -1,0 +1,197 @@
+local _, ns = ...
+
+-- English is the fallback; Spanish for esES and esMX (or when /mercader idioma es says so).
+-- No emoji anywhere: the game's fonts cannot draw them.
+local L = {
+	TITLE = "Mercader",
+	BINDING_TOGGLE = "Open / close",
+	COMPARTMENT = "Click to see the vendors worth a trip.",
+	TAB_VENDORS = "Vendors",
+	TAB_OPTIONS = "Options",
+	SEARCH = "Vendor or item...",
+	CAT_GEAR = "Gear",
+	CAT_POTION = "Potions",
+	CAT_RECIPE = "Recipes",
+	CAT_BAG = "Bags",
+	CAT_OTHER = "Other",
+	SCOPE_ZONE = "This zone",
+	SCOPE_ALL = "Everywhere",
+	EMPTY_ZONE = "Nothing known in this zone yet. Talk to its vendors and they are written down here.",
+	EMPTY_ALL = "Nothing matches. Talk to a vendor and what is worth it is written down here.",
+	PICK_ONE = "Pick a vendor on the left.",
+	COUNT_ITEMS = "%d items",
+	COUNT_ITEM = "1 item",
+	TAG_RUMOUR = "rumour",
+	UNKNOWN_ZONE = "Zone %d",
+	COORDS = "%.1f, %.1f",
+	APPROX_AT = "around %s (approximate)",
+	APPROX = "approximate position",
+	NO_POSITION = "position not known yet",
+	WANDERS_AT = "walks the road %s",
+	NEAR = "at %s",
+	SEEN_AGO = "You saw this stock %s ago.",
+	LOCATED_ONLY = "You found this vendor, but nothing of the list was in stock.",
+	RUMOUR_FOREVER = "Mercader's own list: other players saw this stock in Forever. Visit the vendor and it is written down as you see it.",
+	RUMOUR_CLASSIC = "Mercader's own list: this comes from Classic and nobody confirmed it in Forever yet. Visit the vendor to find out.",
+	STOCK_LEFT = "%d left",
+	STOCK_OUT = "sold out",
+	STOCK_ANY = "always in stock",
+	STOCK_RUMOUR = "not confirmed",
+	ITEM_UNKNOWN = "Item %d",
+	WAYPOINT = "Mark the way",
+	SHOW_MAP = "Open map",
+	FORGET = "Forget",
+	HIDE_RUMOUR = "Hide",
+	WAYPOINT_SET = "%s is marked on your map.",
+	WAYPOINT_NO = "This client cannot put a mark there.",
+	FORGOTTEN = "%s forgotten. It is written down again the next time you visit.",
+	RUMOUR_HIDDEN = "Rumour hidden. /mercader rumores brings every hidden rumour back.",
+	RUMOURS_BACK = "%d hidden rumours are back.",
+	OPT_PINS = "Show vendors on the world map",
+	OPT_RUMOURS = "Show rumours (the addon's own list, not confirmed by you)",
+	OPT_ANNOUNCE = "Tell me in chat when a vendor has limited stock",
+	OPT_OTHER_SIDE = "Show vendors of the other faction too",
+	OPT_MINIMAP = "Minimap button",
+	OPT_MINIMAP_MERGED = "One minimap button for the whole family",
+	OPT_LANG = "Language",
+	OPT_CATS = "What counts as worth it",
+	OPT_ABOUT = "Mercader writes down what a vendor sells when you open their window: limited-stock gear, recipes and other goods, potions and bags. The rumours are the addon's own list, put together from public sources; their positions are approximate until you visit.",
+	LEARNED_NEW = "%s is written down (%s).",
+	ANNOUNCE = "%s has limited stock: %s",
+	PIN_MORE = "...and %d more",
+	PIN_CLICK = "Click: open in Mercader. Right click: mark the way.",
+	NOTE_TITLE = "Rumours in this zone, position not known",
+	NOTE_CLICK = "Click: open the list.",
+	AGO_MIN = "%d min",
+	AGO_HOUR = "%d h",
+	AGO_DAY = "%d d",
+	AGO_NOW = "a moment",
+	ZONES_HEAD = "Zones of the list, as this client names them:",
+	ZONES_MISSING = "%d: not in this client",
+	HELP = "/mercader opens the book. /mercader buscar NAME looks for a vendor or an item, /mercader mapa on|off shows or hides the map marks, /mercader rumores brings hidden rumours back, /mercader zonas checks the list's zones, /mercader minimapa on|off (juntar on|off: one button for the whole family), /mercader idioma es|en|auto, /mercader errores shows the addon's own errors to copy.",
+	PINS_ON = "Vendors are shown on the world map.",
+	PINS_OFF = "Vendors are hidden from the world map.",
+	ERR_TITLE = "Errors",
+	ERR_NOTICE = "had an error. /mercader errores shows it to copy.",
+	ERR_EMPTY = "No errors kept.",
+	ERR_CLEAR = "Clear",
+	ERR_COPY = "Select the text and copy it with Ctrl+C, then paste it in a GitHub issue.",
+	LANG_SET = "Language: %s.",
+	LANG_NAMES = { auto = "the game's", es = "castellano", en = "English" },
+	LANG_USAGE = "/mercader idioma es, en or auto.",
+	MINIMAP_TIP = "Left click: the book. Right click: this zone's vendors in chat.",
+	MINIMAP_MERGED_ON = "One minimap button for the whole family (/mercader minimapa juntar off splits them again).",
+	MINIMAP_MERGED_OFF = "Each addon has its own minimap button again.",
+	ZONE_NONE = "Nothing known in this zone yet.",
+	ZONE_LINE = "%s: %s",
+}
+
+local es = {
+	BINDING_TOGGLE = "Abrir / cerrar",
+	COMPARTMENT = "Clic para ver los vendedores que valen el viaje.",
+	TAB_VENDORS = "Vendedores",
+	TAB_OPTIONS = "Opciones",
+	SEARCH = "Vendedor u objeto...",
+	CAT_GEAR = "Equipo",
+	CAT_POTION = "Pociones",
+	CAT_RECIPE = "Recetas",
+	CAT_BAG = "Bolsas",
+	CAT_OTHER = "Otros",
+	SCOPE_ZONE = "Esta zona",
+	SCOPE_ALL = "Todo",
+	EMPTY_ZONE = "Todavía no hay nada anotado en esta zona. Hablá con sus vendedores y quedan anotados acá.",
+	EMPTY_ALL = "Nada coincide. Hablá con un vendedor y lo que vale la pena queda anotado acá.",
+	PICK_ONE = "Elegí un vendedor a la izquierda.",
+	COUNT_ITEMS = "%d objetos",
+	COUNT_ITEM = "1 objeto",
+	TAG_RUMOUR = "rumor",
+	UNKNOWN_ZONE = "Zona %d",
+	APPROX_AT = "por %s (aproximado)",
+	APPROX = "posición aproximada",
+	NO_POSITION = "posición todavía sin conocer",
+	WANDERS_AT = "recorre el camino %s",
+	NEAR = "en %s",
+	SEEN_AGO = "Viste este stock hace %s.",
+	LOCATED_ONLY = "Encontraste a este vendedor, pero no tenía en stock nada de la lista.",
+	RUMOUR_FOREVER = "Lista propia de Mercader: otros jugadores vieron este stock en Forever. Visitá al vendedor y queda anotado como lo veas vos.",
+	RUMOUR_CLASSIC = "Lista propia de Mercader: esto viene de Classic y todavía nadie lo confirmó en Forever. Visitá al vendedor para saberlo.",
+	STOCK_LEFT = "quedaban %d",
+	STOCK_OUT = "agotado",
+	STOCK_ANY = "siempre hay",
+	STOCK_RUMOUR = "sin confirmar",
+	ITEM_UNKNOWN = "Objeto %d",
+	WAYPOINT = "Marcar camino",
+	SHOW_MAP = "Ver mapa",
+	FORGET = "Olvidar",
+	HIDE_RUMOUR = "Ocultar",
+	WAYPOINT_SET = "%s quedó marcado en tu mapa.",
+	WAYPOINT_NO = "Este cliente no puede poner una marca ahí.",
+	FORGOTTEN = "%s olvidado. Se vuelve a anotar la próxima vez que lo visites.",
+	RUMOUR_HIDDEN = "Rumor oculto. /mercader rumores trae de vuelta todos los rumores ocultos.",
+	RUMOURS_BACK = "Volvieron %d rumores ocultos.",
+	OPT_PINS = "Mostrar los vendedores en el mapa del mundo",
+	OPT_RUMOURS = "Mostrar rumores (la lista propia del addon, sin confirmar por vos)",
+	OPT_ANNOUNCE = "Avisarme en el chat cuando un vendedor tiene stock limitado",
+	OPT_OTHER_SIDE = "Mostrar también los vendedores de la otra facción",
+	OPT_MINIMAP = "Botón del minimapa",
+	OPT_MINIMAP_MERGED = "Un solo botón del minimapa para toda la familia",
+	OPT_LANG = "Idioma",
+	OPT_CATS = "Qué cuenta como que vale la pena",
+	OPT_ABOUT = "Mercader anota lo que vende un vendedor cuando abrís su ventana: equipo, recetas y otros objetos de stock limitado, pociones y bolsas. Los rumores son la lista propia del addon, armada con fuentes públicas; sus posiciones son aproximadas hasta que los visites.",
+	LEARNED_NEW = "%s quedó anotado (%s).",
+	ANNOUNCE = "%s tiene stock limitado: %s",
+	PIN_MORE = "...y %d más",
+	PIN_CLICK = "Clic: abrir en Mercader. Clic derecho: marcar el camino.",
+	NOTE_TITLE = "Rumores de esta zona, posición sin conocer",
+	NOTE_CLICK = "Clic: abrir la lista.",
+	AGO_NOW = "un momento",
+	ZONES_HEAD = "Zonas de la lista, como las nombra este cliente:",
+	ZONES_MISSING = "%d: no está en este cliente",
+	HELP = "/mercader abre el libro. /mercader buscar NOMBRE busca un vendedor o un objeto, /mercader mapa on|off muestra u oculta las marcas del mapa, /mercader rumores trae de vuelta los rumores ocultos, /mercader zonas revisa las zonas de la lista, /mercader minimapa on|off (juntar on|off: un botón para toda la familia), /mercader idioma es|en|auto, /mercader errores muestra los errores del addon para copiarlos.",
+	PINS_ON = "Los vendedores se muestran en el mapa del mundo.",
+	PINS_OFF = "Los vendedores quedan ocultos en el mapa del mundo.",
+	ERR_TITLE = "Errores",
+	ERR_NOTICE = "tuvo un error. /mercader errores lo muestra para copiarlo.",
+	ERR_EMPTY = "No hay errores guardados.",
+	ERR_CLEAR = "Limpiar",
+	ERR_COPY = "Seleccioná el texto y copialo con Ctrl+C, después pegalo en un issue de GitHub.",
+	LANG_SET = "Idioma: %s.",
+	LANG_NAMES = { auto = "el del juego", es = "castellano", en = "English" },
+	LANG_USAGE = "/mercader idioma es, en o auto.",
+	MINIMAP_TIP = "Clic: el libro. Clic derecho: los vendedores de esta zona en el chat.",
+	MINIMAP_MERGED_ON = "Un solo botón del minimapa para toda la familia (/mercader minimapa juntar off los separa de nuevo).",
+	MINIMAP_MERGED_OFF = "Cada addon tiene de nuevo su botón del minimapa.",
+	ZONE_NONE = "Todavía no hay nada anotado en esta zona.",
+}
+
+-- ns.L is a proxy: the files keep `local L = ns.L` and read through it, so the language can change after
+-- they loaded (the setting lives in MercaderDB, which is only there at ADDON_LOADED; /mercader idioma too).
+local active = L
+ns.L = setmetatable({}, {
+	__index = function(_, k)
+		return active[k]
+	end,
+})
+
+-- "auto" follows the game's client; "es" or "en" force one.
+function ns.ApplyLanguage(code)
+	local locale = GetLocale()
+	local spanish = code == "es" or (code ~= "en" and (locale == "esES" or locale == "esMX"))
+	if spanish then
+		local merged = {}
+		for k, v in pairs(L) do
+			merged[k] = v
+		end
+		for k, v in pairs(es) do
+			merged[k] = v
+		end
+		active = merged
+	else
+		active = L
+	end
+	ns.language = spanish and "es" or "en"
+	if ns.Fire then
+		ns.Fire("language")
+	end
+end
+ns.ApplyLanguage("auto")

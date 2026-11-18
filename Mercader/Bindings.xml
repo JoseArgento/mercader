@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="MERCADER_TOGGLE" header="MERCADER" category="ADDONS">
+		Mercader_Toggle()
+	</Binding>
+</Bindings>

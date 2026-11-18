@@ -1,0 +1,23 @@
+## Interface: 16001
+## Title: Mercader
+## Notes: Vendors worth the trip, on your map: limited-stock gear, potions, recipes and bags. It learns every vendor you visit and starts with its own list of rumours.
+## Notes-esES: Vendedores que valen el viaje, en tu mapa: equipo de stock limitado, pociones, recetas y bolsas. Aprende cada vendedor que visitás y arranca con una lista propia de rumores.
+## Notes-esMX: Vendedores que valen el viaje, en tu mapa: equipo de stock limitado, pociones, recetas y bolsas. Aprende cada vendedor que visitas y arranca con una lista propia de rumores.
+## Author: José Argento
+## Version: @project-version@
+## SavedVariables: MercaderDB
+## IconTexture: Interface\AddOns\Mercader\Media\icon
+## AddonCompartmentFunc: Mercader_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Mercader_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Mercader_OnAddonCompartmentLeave
+## Category: Map
+
+Libs\Pergamino\Pergamino.lua
+Locales.lua
+Core.lua
+Seed.lua
+Vendors.lua
+Learn.lua
+Map.lua
+UI.lua
+Events.lua
