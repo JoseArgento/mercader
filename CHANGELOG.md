@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar
+## 0.1.1 (2026-11-19)
 
 - **El icono de cada objeto en su renglón**, en la página del vendedor: el mismo dibujo que tiene en la bolsa (lo da el juego; el addon no trae ninguno), chico y con un borde de tinta. Lo que es rumor sale más tenue.
 
